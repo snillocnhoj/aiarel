@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIAREL Command Terminal - Resort Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Include Tone.js for procedural sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e5e5e5;
+            overflow: hidden;
+            user-select: none;
+        }
+        .font-mono {
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(34, 211, 238, 0.05) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.15;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 50;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        /* Resort Architectural Blueprint Map */
+        .venue-map {
+            background-color: #040910;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.08) 0%, rgba(3, 7, 18, 0.95) 85%),
+                linear-gradient(rgba(34, 211, 238, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(34, 211, 238, 0.1);
+        }
+
+        /* Blueprint Architectural Elements */
+        .blueprint-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .cad-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            fill: rgba(34, 211, 238, 0.7);
+            font-weight: 600;
+        }
+        .cad-sublabel {
+            font-family: 'Space Mono', monospace;
+            font-size: 7.5px;
+            letter-spacing: 0.1em;
+            fill: rgba(148, 163, 184, 0.6);
+        }
+        .cad-line {
+            stroke: rgba(34, 211, 238, 0.3);
+            stroke-width: 1;
+            fill: none;
+        }
+        .cad-room {
+            fill: rgba(15, 23, 42, 0.55);
+            stroke: rgba(34, 211, 238, 0.35);
+            stroke-width: 1.2;
+            transition: all 0.6s ease;
+        }
+        .cad-room-active {
+            fill: rgba(34, 211, 238, 0.12);
+            stroke: rgba(34, 211, 238, 0.85);
+            filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.4));
+        }
+
+        /* Tactical Grid Overlay */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle, rgba(34, 211, 238, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .guest-dot {
+            width: 14px;
+            height: 14px;
+            background-color: #22d3ee;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 20px 8px rgba(34, 211, 238, 0.5);
+            transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+        
+        /* Ring animation around the guest */
+        .guest-dot::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 1px solid rgba(34, 211, 238, 0.8);
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .heatmap-overlay {
+            position: absolute;
+            top: 40%;
+            left: 30%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.5) 0%, rgba(239, 68, 68, 0) 70%);
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .heatmap-active { opacity: 1; }
+        .heatmap-resolved {
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, rgba(34, 211, 238, 0) 70%);
+            opacity: 1;
+        }
+
+        /* Component Styles */
+        .glass-panel {
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-terminal {
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+            color: #22d3ee;
+            transition: all 0.3s ease;
+        }
+        .btn-terminal:hover {
+            background: rgba(34, 211, 238, 0.2);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-action {
+            background: rgba(34, 211, 238, 0.15);
+            border: 1px solid #22d3ee;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+        }
+        .btn-action:hover {
+            background: rgba(34, 211, 238, 0.4);
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.6);
+        }
+
+        .fade-in { animation: fadeIn 0.8s ease-in forwards; }
+        .fade-out { animation: fadeOut 0.5s ease-out forwards; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; display: none; } }
+        
+        .typing::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
+            margin-left: 4px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .ambient-pulse {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* NEW: Ambient Guest styling and Alert state */
+        .ambient-guest-dot {
+            width: 8px;
+            height: 8px;
+            background-color: rgba(34, 211, 238, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            transition: opacity 1.5s ease;
+            z-index: 9;
+            pointer-events: none;
+        }
+        .guest-alert {
+            background-color: #ef4444 !important;
+            box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.5) !important;
+        }
+        .guest-alert::after {
+            border-color: rgba(239, 68, 68, 0.8) !important;
+        }
+        
+        /* NEW: Ambient scanning state for guest targeting */
+        .ambient-scanning {
+            background-color: #22d3ee !important;
+            box-shadow: 0 0 12px 4px rgba(34, 211, 238, 0.8) !important;
+            transform: scale(1.5);
+            z-index: 15;
+            transition: all 0.2s ease;
+        }
+        .ambient-scanning::after {
+            content: '';
+            position: absolute;
+            top: -6px; left: -6px; right: -6px; bottom: -6px;
+            border: 1px solid rgba(34, 211, 238, 0.9);
+            border-radius: 50%;
+            animation: pulse-ring 0.5s ease-out infinite;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center relative">
+    <div class="scanline"></div>
+
+    <!-- PRE-INITIALIZATION AUDIO GATE -->
+    <div id="screen-audio-init" class="w-full max-w-lg p-10 glass-panel rounded-xl z-30 flex flex-col items-center text-center fade-in absolute">
+        <div class="mb-6 flex flex-col justify-center items-center">
+            <img src="logo.png" alt="AIAREL Logo" class="h-12 w-auto mb-3">
+            <p class="font-mono text-cyan-400 text-[10px] tracking-widest">OVERSIGHT AND ACTIVATION SIMULATOR</p>
+        </div>
+        <p class="font-mono text-cyan-500 text-xs tracking-widest mb-8">AUTHORIZE COMMUNICATION</p>
+        <button class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full" onclick="startAudioGate()">
+            INITIALIZE AUDIO INTERFACE
+        </button>
+    </div>
+
+    <!-- CALIBRATION SCREEN -->
+    <div id="screen-calibration" class="w-full max-w-2xl p-10 glass-panel rounded-xl z-20 flex-col absolute hidden">
+        <div class="mb-8 border-b border-cyan-900/50 pb-6 text-center flex flex-col items-center">
+            <img src="logo.png" alt="AIAREL Logo" class="h-16 w-auto mb-4">
+            <p class="font-mono text-cyan-500 text-sm tracking-widest mt-2">SYSTEM CALIBRATION</p>
+        </div>
+        <div class="flex-grow flex flex-col justify-center items-center py-4 w-full">
+            <div class="w-full max-w-sm space-y-5 mb-8 text-left">
+                <div id="q1-container">
+                    <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">DEFINE ECOSYSTEM</label>
+                    <select id="select-ecosystem" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none" onchange="showNextConfig('q2-container')">
+                        <option value="" disabled selected>Select Ecosystem...</option>
+                        <option value="Integrated Resort">Integrated Resort</option>
+                        <option value="Luxury Hotel">Luxury Hotel</option>
+                        <option value="Business Hotel">Business Hotel</option>
+                    </select>
+                </div>
+                <div id="q2-container" class="hidden opacity-0 transition-opacity duration-500">
+                    <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">PRIMARY INEFFICIENCY</label>
+                    <select id="select-inefficiency" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none" onchange="showNextConfig('q3-container')">
+                        <option value="" disabled selected>Select Inefficiency...</option>
+                        <option>Premature venue exit (Lost Dwell Time)</option>
+                        <option>Low per-capita ancillary spend</option>
+                        <option>Unpredictable crowd bottlenecks</option>
+                    </select>
+                </div>
+                <div id="q3-container" class="hidden opacity-0 transition-opacity duration-500">
+                    <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">COMMAND ROLE</label>
+                    <select id="select-role" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none" onchange="showNextConfig('auth-btn')">
+                        <option value="" disabled selected>Select Role...</option>
+                        <option>Revenue Optimization (Commercial)</option>
+                        <option>Guest Experience (Operations)</option>
+                        <option>Infrastructure Oversight (IT)</option>
+                    </select>
+                </div>
+            </div>
+            <button id="auth-btn" class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full max-w-sm hidden opacity-0 transition-opacity duration-500" onclick="initializeSystem()">
+                AUTHORIZE CONNECTION
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="screen-dashboard" class="w-full h-full p-4 md:p-6 hidden flex-col z-10 absolute inset-0 bg-[#050505]">
+        <!-- Header -->
+        <div class="flex justify-between items-end border-b border-cyan-900/50 pb-4 mb-4 glass-panel px-6 py-4 rounded-t-lg">
+            <div class="flex items-center">
+                <img src="logo.png" alt="AIAREL Logo" class="h-10 mr-4">
+                <div class="flex flex-col justify-center border-l border-cyan-900/50 pl-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-cyan-400 font-mono text-xs tracking-widest">[OVERSIGHT_ACTIVE]</span>
+                        <span class="text-[9px] font-mono text-emerald-400/80 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30 ambient-pulse flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> SERENITY ENGINE: 432Hz
+                        </span>
+                    </div>
+                    <p id="property-label" class="font-mono text-cyan-700 text-[10px] tracking-widest mt-1">MASTER ARCHITECTURAL OVERLAY: GRAND AZURE RESORT & RETREAT</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-mono text-gray-500 text-[10px] tracking-widest mb-1">CAPTURED ANCILLARY REVENUE</p>
+                <p class="font-mono text-4xl text-cyan-400 font-bold tracking-wider">$<span id="revenue-counter">0</span></p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-grow flex flex-col md:flex-row gap-4 h-full overflow-hidden relative">
+            
+            <!-- Left: The Architectural Master Blueprint -->
+            <div class="w-full md:w-2/3 h-full venue-map rounded-lg relative rounded-b-lg rounded-tl-none">
+                <div class="grid-overlay"></div>
+                
+                <!-- Detailed Architectural Vector Floorplan -->
+                <svg class="blueprint-svg" viewBox="0 0 1000 650" preserveAspectRatio="none">
+                    <defs>
+                        <pattern id="poolHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="0" x2="0" y2="10" stroke="rgba(34, 211, 238, 0.15)" stroke-width="1.5" />
+                        </pattern>
+                        <pattern id="deckWood" width="8" height="8" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="0" x2="8" y2="0" stroke="rgba(148, 163, 184, 0.1)" stroke-width="1" />
+                        </pattern>
+                    </defs>
+
+                    <!-- Property Boundary Perimeter -->
+                    <rect x="25" y="20" width="950" height="610" rx="14" fill="none" stroke="rgba(34, 211, 238, 0.25)" stroke-dasharray="6,6" stroke-width="1.2" />
+                    
+                    <!-- Coordinate Grid Reference Marks -->
+                    <text x="35" y="40" class="cad-sublabel">LAT 24°18'N / ELEV 12m</text>
+                    <text x="860" y="40" class="cad-sublabel">CAD SEC: MASTER-LVL-01</text>
+                    <text x="35" y="620" class="cad-sublabel">STATUS: ALL PROTOCOLS MAPPED</text>
+                    <text x="840" y="620" class="cad-sublabel">AIAREL PROPRIETARY GRID</text>
+
+                    <!-- ================= ZONE 1: CABANA CLUB & LAGOON (TOP LEFT) ================= -->
+                    <g id="cad-zone-1">
+                        <!-- Main Pool Deck -->
+                        <rect x="60" y="55" width="280" height="175" rx="8" fill="url(#deckWood)" class="cad-line" />
+                        <!-- Primary Lagoon Pool -->
+                        <path d="M 80,75 Q 160,65 240,75 Q 260,130 240,185 Q 150,195 80,180 Z" fill="url(#poolHatch)" stroke="rgba(34, 211, 238, 0.6)" stroke-width="1.5" />
+                        <!-- Infinity Edge Water Marker -->
+                        <line x1="80" y1="75" x2="240" y2="75" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,2" />
+                        <!-- Private Cabana Modules (1-4) -->
+                        <rect x="70" y="85" width="24" height="24" rx="2" class="cad-room" />
+                        <rect x="70" y="120" width="24" height="24" rx="2" class="cad-room" />
+                        <rect x="70" y="155" width="24" height="24" rx="2" class="cad-room" />
+                        <rect x="235" y="90" width="24" height="24" rx="2" class="cad-room" />
+                        <rect x="235" y="125" width="24" height="24" rx="2" class="cad-room" />
+                        <!-- Pool Bar & Daybed Pavilions -->
+                        <circle cx="160" cy="130" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="rgba(34, 211, 238, 0.4)" />
+                        <text x="145" y="133" class="cad-sublabel" fill="#22d3ee">BAR</text>
+                        <!-- Labels -->
+                        <text x="80" y="48" class="cad-label">ZONE 01 • CABANA CLUB & RECREATION LAGOON</text>
+                        <text x="95" y="100" class="cad-sublabel">CABANA ROW A-D</text>
+                        <text x="140" y="170" class="cad-sublabel">HEATED INFINITY POOL (1.4M)</text>
+                    </g>
+
+                    <!-- ================= ZONE 2: SIGNATURE DINING & WINE PAVILION (TOP RIGHT) ================= -->
+                    <g id="cad-zone-2">
+                        <!-- Dining Enclosure -->
+                        <rect x="680" y="60" width="260" height="200" rx="8" class="cad-room" />
+                        <!-- Show Kitchen Area -->
+                        <rect x="695" y="75" width="100" height="50" class="cad-line" fill="rgba(239, 68, 68, 0.08)" />
+                        <text x="705" y="105" class="cad-sublabel" fill="#f87171">SHOW KITCHEN / EXPEDITE</text>
+                        <!-- Private Dining Room (PDR) -->
+                        <rect x="810" y="75" width="115" height="50" class="cad-line" />
+                        <text x="825" y="105" class="cad-sublabel">CELLAR & RESERVE PDR</text>
+                        <!-- Tables & Seating Grids -->
+                        <circle cx="720" cy="160" r="10" class="cad-line" />
+                        <circle cx="760" cy="160" r="10" class="cad-line" />
+                        <circle cx="800" cy="160" r="10" class="cad-line" />
+                        <circle cx="840" cy="160" r="10" class="cad-line" />
+                        <circle cx="740" cy="205" r="10" class="cad-line" />
+                        <circle cx="780" cy="205" r="10" class="cad-line" />
+                        <circle cx="820" cy="205" r="10" class="cad-line" />
+                        <!-- Outdoor Alfresco Deck -->
+                        <path d="M 680,240 L 940,240 L 940,255 L 680,255 Z" fill="url(#deckWood)" stroke="rgba(34, 211, 238, 0.3)" />
+                        <!-- Labels -->
+                        <text x="685" y="50" class="cad-label">ZONE 02 • THE CITADEL SIGNATURE DINING</text>
+                        <text x="715" y="235" class="cad-sublabel">ALFRESCO TERRACE (COVERS: 180)</text>
+                    </g>
+
+                    <!-- ================= ZONE 4: GRAND LOBBY, ATRIUM & CONCOURSE (CENTER) ================= -->
+                    <g id="cad-zone-4">
+                        <!-- Concourse Structure -->
+                        <rect x="290" y="230" width="410" height="220" rx="10" class="cad-room" />
+                        <!-- Rotunda Centerpiece -->
+                        <circle cx="495" cy="340" r="45" fill="rgba(34, 211, 238, 0.04)" stroke="rgba(34, 211, 238, 0.5)" stroke-dasharray="3,3" />
+                        <circle cx="495" cy="340" r="20" fill="none" stroke="rgba(34, 211, 238, 0.7)" />
+                        <!-- Porte-Cochere & Arrival Vestibule -->
+                        <rect x="430" y="210" width="130" height="25" rx="4" class="cad-line" fill="rgba(15, 23, 42, 0.8)" />
+                        <text x="445" y="226" class="cad-sublabel" fill="#38bdf8">MAIN PORTE-COCHÈRE</text>
+                        <!-- Reception Pods -->
+                        <rect x="320" y="260" width="60" height="18" rx="3" class="cad-line" />
+                        <text x="330" y="272" class="cad-sublabel">CHECK-IN</text>
+                        <rect x="320" y="295" width="60" height="18" rx="3" class="cad-line" />
+                        <text x="325" y="307" class="cad-sublabel">CONCIERGE</text>
+                        <!-- Promenade Corridor to North Exit / Gateway -->
+                        <line x1="495" y1="210" x2="495" y2="35" stroke="rgba(34, 211, 238, 0.3)" stroke-width="2" stroke-dasharray="6,4" />
+                        <text x="505" y="70" class="cad-sublabel">CORRIDOR 01: NORTH PROPERTY GATEWAY</text>
+                        <!-- Promenade Corridor to East Dining -->
+                        <line x1="680" y1="340" x2="780" y2="260" stroke="rgba(34, 211, 238, 0.3)" stroke-width="2" stroke-dasharray="6,4" />
+                        <!-- Labels -->
+                        <text x="380" y="375" class="cad-label">ZONE 04 • GRAND ATRIUM & MEZZANINE LOUNGE</text>
+                        <text x="440" y="395" class="cad-sublabel">CENTRAL VECTOR AXIS</text>
+                    </g>
+
+                    <!-- ================= ZONE 3: GUEST RESIDENCE SUITES & VILLAS (BOTTOM) ================= -->
+                    <g id="cad-zone-3">
+                        <!-- Suites Wing Outer -->
+                        <rect x="310" y="475" width="375" height="140" rx="8" class="cad-room" />
+                        <!-- Suite Partitions (Villa Blocks 301-308) -->
+                        <line x1="400" y1="475" x2="400" y2="615" class="cad-line" />
+                        <line x1="495" y1="475" x2="495" y2="615" class="cad-line" />
+                        <line x1="590" y1="475" x2="590" y2="615" class="cad-line" />
+                        <line x1="310" y1="545" x2="685" y2="545" class="cad-line" />
+                        <!-- Suite Labels -->
+                        <text x="330" y="515" class="cad-sublabel">SUITE 301</text>
+                        <text x="425" y="515" class="cad-sublabel">SUITE 302</text>
+                        <text x="520" y="515" class="cad-sublabel">SUITE 303</text>
+                        <text x="615" y="515" class="cad-sublabel">PRESIDENTIAL</text>
+                        <text x="330" y="585" class="cad-sublabel">SUITE 304</text>
+                        <text x="425" y="585" class="cad-sublabel">SUITE 305</text>
+                        <text x="520" y="585" class="cad-sublabel">SUITE 306</text>
+                        <text x="615" y="585" class="cad-sublabel">SUITE 307</text>
+                        <!-- Corridor Axis -->
+                        <text x="360" y="465" class="cad-label">ZONE 03 • OCEANSIDE RESIDENTIAL SUITES & VILLAS</text>
+                    </g>
+
+                    <!-- Auxiliary Zones (Spa & Executive Pavilion) -->
+                    <rect x="60" y="440" width="190" height="160" rx="6" class="cad-room" />
+                    <text x="75" y="465" class="cad-label">LOTUS WELLNESS & SPA</text>
+                    <text x="75" y="485" class="cad-sublabel">HYDROTHERMAL CIRCS • 12 SUITES</text>
+
+                    <rect x="750" y="440" width="190" height="160" rx="6" class="cad-room" />
+                    <text x="765" y="465" class="cad-label">CONFERENCE & BALLROOM</text>
+                    <text x="765" y="485" class="cad-sublabel">PLENARY PAVILION 1-3</text>
+                </svg>
+
+                <!-- Heatmap -->
+                <div id="heatmap" class="heatmap-overlay"></div>
+
+                <!-- Guest Dot -->
+                <div id="guest-dot" class="guest-dot" style="top: 50%; left: 50%; opacity: 0;"></div>
+                
+                <!-- Live Profile Popover (Hidden initially) -->
+                <div id="guest-profile" class="absolute glass-panel p-3 rounded border border-cyan-500/50 hidden transition-all duration-500 z-20" style="top: 50%; left: 55%;">
+                    <p class="font-mono text-[10px] text-white font-bold border-b border-cyan-800 pb-1 mb-1">GUEST: A. STERLING</p>
+                    <p class="font-mono text-[9px] text-cyan-300">STATUS: High Value / Day 2</p>
+                    <p class="font-mono text-[9px] text-gray-400" id="guest-intent">INTENT: Unknown</p>
+                </div>
+
+                <!-- Final CTA Panel overlay over the map -->
+                <div id="cta-panel" class="w-full h-full flex-col items-center justify-center hidden fade-in z-30 absolute inset-0 bg-black/80 backdrop-blur-sm p-4">
+                    <img src="logo.png" alt="AIAREL Logo" class="h-16 w-auto mb-4">
+                    <p class="font-mono text-xs text-cyan-300 text-center mb-2 mt-4 leading-relaxed max-w-sm">
+                        Orchestrate your systems. Activate your property. Elevate your profits.
+                    </p>
+                    <p class="font-mono text-sm text-cyan-400 text-center mb-8 font-bold tracking-widest">
+                        Discover AIAREL.
+                    </p>
+                    <button class="btn-action py-3.5 px-8 rounded font-mono text-sm tracking-widest font-bold shadow-[0_0_20px_rgba(34,211,238,0.4)]" onclick="window.open('https://aiarel.com', '_blank')">
+                        BOOK WALKTHROUGH
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Controls & Logs -->
+            <div class="w-full md:w-1/3 h-full flex flex-col gap-4 relative z-20">
+                
+                <!-- System Log -->
+                <div class="flex-grow glass-panel rounded-lg p-5 flex flex-col">
+                    <p class="font-mono text-xs text-cyan-700 tracking-widest border-b border-cyan-900/50 pb-2 mb-3 flex justify-between">
+                        <span>SYSTEM LOG</span>
+                        <span id="audio-status" class="text-green-500/50">AUDIO: ONLINE</span>
+                    </p>
+                    <div id="sys-log" class="font-mono text-[11px] leading-relaxed text-gray-300 flex-grow overflow-y-auto space-y-3">
+                        <!-- Logs injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Command Interface -->
+                <div class="h-56 glass-panel rounded-lg p-5 flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-cyan-900/50">
+                        <div id="progress-bar" class="h-full bg-cyan-400 w-0 transition-all duration-1000"></div>
+                    </div>
+                    
+                    <p class="font-mono text-xs text-cyan-700 tracking-widest mb-4">COMMAND INTERFACE</p>
+                    
+                    <div id="action-panel" class="w-full flex flex-col gap-3 hidden flex-grow justify-center">
+                        <p id="action-prompt" class="font-mono text-sm text-white text-center mb-3">ACTION REQUIRED</p>
+                        <button id="btn-passive" class="btn-terminal py-2.5 px-4 rounded font-mono text-[11px] tracking-widest" onclick="handleAction('passive')">PASSIVE OBSERVATION</button>
+                        <button id="btn-active" class="btn-action py-2.5 px-4 rounded font-mono text-[11px] tracking-widest font-bold" onclick="handleAction('active')">ACTIVATE AIAREL</button>
+                    </div>
+                    
+                    <div id="action-waiting" class="w-full h-full flex items-center justify-center font-mono text-xs tracking-widest text-cyan-600 typing">
+                        AWAITING SYSTEM DATA
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO ENGINE ---
+        let synth, successSynth, alertSynth;
+        let ambientPad, ambientSub, ambientReverb, ambientFilter;
+        let ambientInterval = null;
+
+        async function initAudio() {
+            // Start Tone.js context (requires user gesture)
+            await Tone.start();
+            
+            // Standard UI blip
+            synth = new Tone.Synth({
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+            }).toDestination();
+            synth.volume.value = -15;
+
+            // Revenue captured sound
+            successSynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 }
+            }).toDestination();
+            successSynth.volume.value = -10;
+
+            // Alert sound
+            alertSynth = new Tone.Synth({
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
+            }).toDestination();
+            alertSynth.volume.value = -20;
+
+            // --- GOD-MODE AMBIENT SOUNDSCAPE ENGINE ---
+            initAmbientSoundscape();
+        }
+
+        function initAmbientSoundscape() {
+            try {
+                // Reverb & Warm Low-Pass Filter Bus
+                ambientFilter = new Tone.Filter({
+                    frequency: 1200, // Brightened for a techy feel
+                    type: "lowpass",
+                    rolloff: -12
+                });
+                
+                ambientReverb = new Tone.Reverb({
+                    decay: 8, // Tighter spatial feel
+                    preDelay: 0.1,
+                    wet: 0.6
+                });
+
+                ambientFilter.connect(ambientReverb);
+                ambientReverb.toDestination();
+
+                // Multivoice Polyphonic Pad Synth for Serene Harmonics
+                ambientPad = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: 'fatsine', count: 3, spread: 15 }, // Smoother, glassy tech sound
+                    envelope: { attack: 0.2, decay: 2, sustain: 0.6, release: 4 }
+                }).connect(ambientFilter);
+                ambientPad.volume.value = -18; // Adjusted level for brightness
+
+                // Sub-harmonic foundational drone
+                ambientSub = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.2, decay: 1, sustain: 1, release: 4 }
+                }).connect(ambientFilter);
+                ambientSub.volume.value = -24;
+
+                // Generative ambient chord progressions (Tech-forward, optimistic open chords)
+                const chords = [
+                    ['C3', 'G3', 'D4', 'E4'], // Cadd9
+                    ['F2', 'C3', 'G3', 'A3', 'E4'], // Fmaj9
+                    ['D3', 'A3', 'E4', 'F#4'], // Dadd9
+                    ['Bb2', 'F3', 'C4', 'D4']  // Bbadd9
+                ];
+
+                let chordIndex = 0;
+                
+                // Trigger initial sustained chord
+                ambientPad.triggerAttackRelease(chords[0], '8n');
+                ambientSub.triggerAttackRelease('D2', '8n');
+
+                // Slowly morph ambient pad every 7 seconds
+                ambientInterval = setInterval(() => {
+                    chordIndex = (chordIndex + 1) % chords.length;
+                    const currentChord = chords[chordIndex];
+                    ambientPad.triggerAttackRelease(currentChord, 6.5);
+                    if (chordIndex % 2 === 0) {
+                        ambientSub.triggerAttackRelease(currentChord[0], 6.5);
+                    }
+                }, 7000);
+
+            } catch (err) {
+                console.warn('Ambient soundscape initialization deferred:', err);
+            }
+        }
+
+        function playSound(type) {
+            if (!synth) return;
+            if (type === 'blip') synth.triggerAttackRelease('C5', '16n');
+            if (type === 'alert') {
+                alertSynth.triggerAttackRelease('E4', '8n');
+                setTimeout(() => alertSynth.triggerAttackRelease('E4', '8n'), 200);
+            }
+            if (type === 'success') {
+                successSynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '4n');
+            }
+        }
+
+        function speakText(text, audioId = null) {
+            return new Promise((resolve) => {
+                // If no audio file ID is provided or Audio isn't supported, fallback to a timer
+                if (!audioId || typeof Audio === 'undefined') {
+                    setTimeout(resolve, calculateReadingTime(text));
+                    return;
+                }
+                
+                const audio = new Audio(`${audioId}.mp3`);
+                
+                // When the MP3 finishes naturally, resolve the promise to trigger the next event
+                audio.onended = resolve;
+                
+                // If the file is missing (404) or fails to play, fallback to the timer so the demo doesn't freeze
+                audio.onerror = () => {
+                    console.warn(`Could not load or play ${audioId}.mp3. Falling back to timer.`);
+                    setTimeout(resolve, calculateReadingTime(text));
+                };
+                
+                // Optional: Update UI status to show MP3 is playing
+                const audioStatus = document.getElementById('audio-status');
+                if (audioStatus) {
+                    audioStatus.innerText = 'AUDIO: PLAYING';
+                    audioStatus.classList.replace('text-green-500/50', 'text-cyan-400');
+                    audio.addEventListener('ended', () => {
+                        audioStatus.innerText = 'AUDIO: ONLINE';
+                        audioStatus.classList.replace('text-cyan-400', 'text-green-500/50');
+                    });
+                }
+                
+                audio.play().catch(e => {
+                    console.warn(`Playback blocked for ${audioId}.mp3. Ensure user interaction.`, e);
+                    setTimeout(resolve, calculateReadingTime(text));
+                });
+            });
+        }
+
+        // Helper to calculate wait times based on text length (used as a fallback if MP3 is missing)
+        function calculateReadingTime(text) {
+            return Math.max(3000, text.length * 70 + 1000);
+        }
+
+        // --- STATE VARIABLES ---
+        let revenue = 0;
+        let currentScenario = 0;
+        
+        // DOM Elements
+        const elRevenue = document.getElementById('revenue-counter');
+        const elLog = document.getElementById('sys-log');
+        const guestDot = document.getElementById('guest-dot');
+        const guestProfile = document.getElementById('guest-profile');
+        const guestIntent = document.getElementById('guest-intent');
+        const heatmap = document.getElementById('heatmap');
+        
+        const panelAction = document.getElementById('action-panel');
+        const panelWaiting = document.getElementById('action-waiting');
+        const actionPrompt = document.getElementById('action-prompt');
+        const btnActive = document.getElementById('btn-active');
+        const progressBar = document.getElementById('progress-bar');
+
+        const scenarios = [
+            {
+                // Dwell time save
+                logPre: "Guest momentum is fading. Historical data predicts a return to the room and a lost afternoon.",
+                intentText: "INTENT: Returning to Suite",
+                prompt: "PREVENT LOST DWELL TIME",
+                btnActiveText: "TRIGGER CONTEXTUAL OFFER",
+                logPassive: "Guest returned to suite. Afternoon ancillary spend lost.",
+                logActive: "Offer sent. Guest intercepted. Ancillary spend captured.",
+                revenueGained: 45,
+                posStart: { top: '25%', left: '20%' }, // Pool
+                posPassive: { top: '80%', left: '50%' }, // Suite
+                posActive: { top: '20%', left: '25%' },   // Stays at pool/cabana
+                isAlert: false,
+                audioPre: 3,
+                audioActive: 4,
+                audioPassive: 5
+            },
+            {
+                // High margin cross-sell
+                logPre: "Guest is bypassing signature dining. Trajectory indicates property exit.",
+                intentText: "INTENT: Off-Property Dining",
+                prompt: "CAPTURE ANCILLARY SPEND",
+                btnActiveText: "ACTIVATE ENVIRONMENTAL CUE",
+                logPassive: "Guest exited property. Dinner revenue lost to competitor.",
+                logActive: "Digital signage and VIP offer deployed. Guest rerouted to Signature Dining.",
+                revenueGained: 185,
+                posStart: { top: '50%', left: '50%' }, // Main drag
+                posPassive: { top: '5%', left: '50%' }, // Exit
+                posActive: { top: '25%', left: '80%' },  // Dining
+                isAlert: false,
+                audioPre: 6,
+                audioActive: 7,
+                audioPassive: 8
+            },
+            {
+                // Operational bottleneck
+                logPre: "Weather anomaly detected. Sudden indoor migration forming severe lobby bottleneck.",
+                intentText: "INTENT: Seeking Shelter",
+                prompt: "RESOLVE OPERATIONAL BOTTLENECK",
+                btnActiveText: "SYSTEM ORCHESTRATION",
+                logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.",
+                logActive: "Gamified flash-promotions deployed. Crowd dispersed. Staff re-routed. Harmony restored.",
+                revenueGained: 0,
+                posStart: { top: '50%', left: '50%' },
+                posPassive: { top: '50%', left: '50%' }, 
+                posActive: { top: '50%', left: '50%' },
+                isAlert: true,
+                isHeatmap: true,
+                audioPre: 9,
+                audioActive: 10,
+                audioPassive: 11
+            }
+        ];
+
+        // --- NEW INITIALIZATION FLOW ---
+
+        // 1. Unlocks audio and transitions to calibration questions
+        async function startAudioGate() {
+            await initAudio();
+            playSound('blip');
+            
+            document.getElementById('screen-audio-init').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('screen-audio-init').style.display = 'none';
+                
+                const calScreen = document.getElementById('screen-calibration');
+                calScreen.classList.remove('hidden');
+                calScreen.classList.add('flex', 'fade-in');
+            }, 500);
+
+            // Play the first voiceover clip
+            speakText("Communications established. Welcome to AIAREL. Please calibrate system parameters.", 1);
+        }
+
+        // Sequential question helper
+        function showNextConfig(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                setTimeout(() => el.classList.remove('opacity-0'), 50);
+            }
+        }
+
+        // 2. Completes calibration and transitions to dashboard
+        function initializeSystem() {
+            playSound('blip');
+            
+            // Set dynamic header based on calibration choice
+            const ecoSelect = document.getElementById('select-ecosystem');
+            if(ecoSelect) {
+                document.getElementById('property-label').innerText = `MASTER ARCHITECTURAL OVERLAY: ${ecoSelect.value.toUpperCase()}`;
+            }
+
+            document.getElementById('screen-calibration').classList.replace('fade-in', 'fade-out');
+            setTimeout(() => {
+                document.getElementById('screen-calibration').style.display = 'none';
+                document.getElementById('screen-dashboard').classList.remove('hidden');
+                document.getElementById('screen-dashboard').classList.add('flex', 'fade-in');
+                startSimulation();
+            }, 600);
+        }
+
+        function addLog(text, isAlert = false, audioId = null) {
+            const p = document.createElement('p');
+            p.className = `typing ${isAlert ? 'text-red-400' : 'text-cyan-400'}`;
+            // Prepend timestamp
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "numeric", minute: "numeric", second: "numeric" });
+            p.innerHTML = `<span class="text-gray-500 mr-2">[${time}]</span> ${text}`;
+            
+            elLog.appendChild(p);
+            elLog.scrollTop = elLog.scrollHeight;
+            
+            setTimeout(() => p.classList.remove('typing'), 1500);
+            
+            // Returns a promise that resolves when the audio is done playing
+            return speakText(text, audioId);
+        }
+
+        function updateRevenue(amount) {
+            if(amount === 0) return;
+            playSound('success');
+            revenue += amount;
+            
+            let start = parseInt(elRevenue.innerText);
+            let end = revenue;
+            let duration = 1000;
+            let startTime = null;
+            
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                let progress = Math.min((timestamp - startTime) / duration, 1);
+                elRevenue.innerText = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step);
+                else elRevenue.innerText = end;
+            }
+            window.requestAnimationFrame(step);
+        }
+
+        // Ambient Guests Logic
+        let ambientGuests = [];
+        let bottleneckGuests = [];
+        function createAmbientGuests() {
+            const map = document.querySelector('.venue-map');
+            for(let i=0; i<40; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'ambient-guest-dot';
+                // Spread randomly across the blueprint
+                dot.style.top = Math.floor(Math.random() * 75 + 10) + '%';
+                dot.style.left = Math.floor(Math.random() * 85 + 5) + '%';
+                map.appendChild(dot);
+                ambientGuests.push(dot);
+            }
+        }
+        function clearAmbientGuests() {
+            ambientGuests.forEach(dot => dot.style.opacity = '0');
+            setTimeout(() => {
+                ambientGuests.forEach(dot => dot.remove());
+                ambientGuests = [];
+            }, 1500);
+        }
+
+        function createBottleneckCrowd() {
+            const map = document.querySelector('.venue-map');
+            for(let i=0; i<35; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'ambient-guest-dot';
+                
+                // Spawn guests from outside corridors (North, East, West)
+                const startPos = Math.random();
+                if (startPos < 0.33) {
+                    dot.style.top = '5%'; dot.style.left = '50%'; // North
+                } else if (startPos < 0.66) {
+                    dot.style.top = '50%'; dot.style.left = '5%'; // West
+                } else {
+                    dot.style.top = '50%'; dot.style.left = '95%'; // East
+                }
+                
+                dot.style.opacity = '0';
+                dot.style.transition = 'all 3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1s ease';
+                map.appendChild(dot);
+                bottleneckGuests.push(dot);
+
+                // Rush to center lobby anomaly
+                setTimeout(() => {
+                    dot.style.opacity = '1';
+                    dot.style.top = (45 + Math.random() * 10) + '%';
+                    dot.style.left = (45 + Math.random() * 10) + '%';
+                }, 100);
+            }
+        }
+
+        function disperseBottleneckCrowd() {
+            bottleneckGuests.forEach(dot => {
+                // Scatter away to various edges/destinations
+                dot.style.top = (Math.random() * 100) + '%';
+                dot.style.left = (Math.random() * 100) + '%';
+                dot.style.opacity = '0';
+            });
+            setTimeout(() => {
+                bottleneckGuests.forEach(dot => dot.remove());
+                bottleneckGuests = [];
+            }, 3000);
+        }
+
+        function startSimulation() {
+            const initText = "System initialized. Establishing oversight.";
+            progressBar.style.width = '33%';
+            
+            // Wait for audio to finish before loading scenario 0
+            addLog(initText, false, 2).then(() => {
+                loadScenario(0);
+            });
+        }
+
+        function loadScenario(index) {
+            if (index >= scenarios.length) {
+                endSimulation();
+                return;
+            }
+
+            currentScenario = index;
+            const scenario = scenarios[index];
+            playSound('blip');
+
+            // Reset active architectural highlights
+            document.querySelectorAll('.cad-room').forEach(el => el.classList.remove('cad-room-active'));
+            
+            // Reset UI
+            panelAction.classList.add('hidden');
+            panelWaiting.classList.remove('hidden');
+            panelWaiting.innerText = "ANALYZING GUEST VECTOR...";
+
+            if (index === 0) {
+                // Initial Scenario: Show crowded resort, scan targets, lock on, isolate.
+                createAmbientGuests();
+                
+                guestDot.style.transition = 'none'; // Snap to start
+                guestDot.style.top = scenario.posStart.top;
+                guestDot.style.left = scenario.posStart.left;
+                guestDot.classList.remove('guest-alert');
+                guestDot.style.opacity = 0; // Hide A. Sterling initially while scanning others
+                
+                // Force reflow
+                void guestDot.offsetWidth; 
+                guestDot.style.transition = 'all 2s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                let scanCount = 0;
+                let maxScans = 5;
+                
+                // The "God Mode" scanning sequence
+                function scanNextGuest() {
+                    // Clear previous visual scans
+                    document.querySelectorAll('.ambient-scanning').forEach(el => el.classList.remove('ambient-scanning'));
+                    
+                    if (scanCount < maxScans) {
+                        // Play a very subtle high blip for the scan
+                        if (synth) synth.triggerAttackRelease('E6', '32n');
+                        
+                        let randomGuest = ambientGuests[Math.floor(Math.random() * ambientGuests.length)];
+                        if(randomGuest) randomGuest.classList.add('ambient-scanning');
+                        
+                        scanCount++;
+                        setTimeout(scanNextGuest, 500);
+                    } else {
+                        // Settle on A. Sterling and lock in
+                        if (synth) synth.triggerAttackRelease('A5', '16n'); // Target acquired blip
+                        guestDot.style.opacity = 1; 
+                        
+                        setTimeout(() => {
+                            guestDot.classList.add('guest-alert');
+                            if (scenario.isAlert) playSound('alert');
+                            
+                            setTimeout(() => {
+                                clearAmbientGuests();
+                                startScenarioContent(scenario);
+                            }, 1200);
+                        }, 800);
+                    }
+                }
+                
+                // Start scanning shortly after guests populate
+                setTimeout(scanNextGuest, 1000);
+
+            } else if (index === 1) {
+                document.querySelectorAll('#cad-zone-2 .cad-room').forEach(el => el.classList.add('cad-room-active'));
+                
+                // Gliding Transition: Move to next location smoothly
+                guestDot.style.transition = 'all 2.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                guestDot.style.top = scenario.posStart.top;
+                guestDot.style.left = scenario.posStart.left;
+                guestDot.classList.remove('guest-alert');
+                
+                // Wait for the glide to finish before triggering the action
+                setTimeout(() => {
+                    guestDot.classList.add('guest-alert');
+                    if (scenario.isAlert) playSound('alert');
+                    startScenarioContent(scenario);
+                }, 2500);
+
+            } else if (scenario.isHeatmap) {
+                document.querySelectorAll('#cad-zone-4 .cad-room').forEach(el => el.classList.add('cad-room-active'));
+                
+                createBottleneckCrowd();
+                heatmap.classList.add('heatmap-active');
+                heatmap.classList.remove('heatmap-resolved');
+                guestDot.style.opacity = 0;
+                guestProfile.classList.add('hidden');
+                
+                if (scenario.isAlert) playSound('alert');
+                startScenarioContent(scenario);
+            }
+        }
+
+        function startScenarioContent(scenario) {
+            if (!scenario.isHeatmap) {
+                guestIntent.innerText = scenario.intentText;
+                guestProfile.classList.remove('hidden');
+                
+                // Track profile to dot loosely
+                guestProfile.style.top = scenario.posStart.top;
+                guestProfile.style.left = `calc(${scenario.posStart.left} + 20px)`;
+            }
+
+            // Wait for VO to finish, then reveal the Action Panel
+            addLog(scenario.logPre, scenario.isAlert, scenario.audioPre).then(() => {
+                playSound('blip');
+                panelWaiting.classList.add('hidden');
+                panelAction.classList.remove('hidden');
+                actionPrompt.innerText = scenario.prompt;
+                btnActive.innerText = scenario.btnActiveText;
+            });
+        }
+
+        function handleAction(type) {
+            playSound('blip');
+            panelAction.classList.add('hidden');
+            panelWaiting.classList.remove('hidden');
+            panelWaiting.innerText = "EXECUTING COMMAND...";
+
+            const scenario = scenarios[currentScenario];
+            progressBar.style.width = `${((currentScenario + 1) / scenarios.length) * 100}%`;
+
+            let actionPromise;
+
+            if (type === 'active') {
+                guestDot.classList.remove('guest-alert'); // clear alert state
+                actionPromise = addLog(scenario.logActive, false, scenario.audioActive);
+                updateRevenue(scenario.revenueGained);
+                
+                if(scenario.isHeatmap) {
+                    disperseBottleneckCrowd();
+                    heatmap.classList.add('heatmap-resolved');
+                    setTimeout(() => heatmap.classList.remove('heatmap-active', 'heatmap-resolved'), 3000);
+                } else {
+                    guestDot.style.top = scenario.posActive.top;
+                    guestDot.style.left = scenario.posActive.left;
+                    guestProfile.style.top = scenario.posActive.top;
+                    guestProfile.style.left = `calc(${scenario.posActive.left} + 20px)`;
+                }
+            } else {
+                guestDot.classList.remove('guest-alert'); // clear alert state
+                actionPromise = addLog(scenario.logPassive, true, scenario.audioPassive);
+                if(!scenario.isHeatmap) {
+                    guestDot.style.top = scenario.posPassive.top;
+                    guestDot.style.left = scenario.posPassive.left;
+                    guestProfile.style.top = scenario.posPassive.top;
+                    guestProfile.style.left = `calc(${scenario.posPassive.left} + 20px)`;
+                }
+            }
+
+            // Wait for VO to finish, then load next scenario
+            actionPromise.then(() => {
+                guestProfile.classList.add('hidden');
+                loadScenario(currentScenario + 1);
+            });
+        }
+
+        function endSimulation() {
+            playSound('success');
+            panelWaiting.innerText = "SIMULATION COMPLETE";
+            const endText = `Simulation complete. Total orchestrated revenue captured: $${revenue}.`;
+            
+            // Wait for the completion statement (clip 12)
+            addLog(endText, false, 12).then(() => {
+                const finalPitch = "AIAREL connects your environment to the guest—delivering real-time personalization, effortless upsell, and unforgettable journeys.";
+                
+                // Wait for the final pitch (clip 13), then show CTA
+                addLog(finalPitch, false, 13).then(() => {
+                    setTimeout(() => {
+                        panelWaiting.classList.add('hidden');
+                        document.getElementById('cta-panel').classList.remove('hidden');
+                        document.getElementById('cta-panel').classList.add('flex');
+                    }, 500);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
