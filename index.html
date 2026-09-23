@@ -242,8 +242,8 @@
     <!-- PRE-INITIALIZATION AUDIO GATE -->
     <div id="screen-audio-init" class="w-full max-w-lg p-10 glass-panel rounded-xl z-30 flex flex-col items-center text-center fade-in absolute">
         <div class="mb-6 flex flex-col justify-center items-center">
-            <img src="logo.png" alt="AIAREL Logo" class="h-12 w-auto mb-3">
-            <p class="font-mono text-cyan-400 text-[10px] tracking-widest">OVERSIGHT AND ACTIVATION SIMULATOR</p>
+            <img src="logo.png" alt="AIAREL" class="h-12 mb-4 object-contain">
+            <p class="font-mono text-cyan-400 text-[10px] tracking-widest leading-relaxed">GUEST OVERSIGHT & ACTIVATION<br>CONCEPT SIMULATOR</p>
         </div>
         <p class="font-mono text-cyan-500 text-xs tracking-widest mb-8">AUTHORIZE COMMUNICATION</p>
         <button class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full" onclick="startAudioGate()">
@@ -254,7 +254,8 @@
     <!-- CALIBRATION SCREEN -->
     <div id="screen-calibration" class="w-full max-w-2xl p-10 glass-panel rounded-xl z-20 flex-col absolute hidden">
         <div class="mb-8 border-b border-cyan-900/50 pb-6 text-center flex flex-col items-center">
-            <img src="logo.png" alt="AIAREL Logo" class="h-16 w-auto mb-4">
+            <img src="logo.png" alt="AIAREL" class="h-10 mb-3 object-contain">
+            <p class="font-mono text-cyan-400 text-[10px] tracking-widest leading-relaxed mb-3">GUEST OVERSIGHT & ACTIVATION<br>CONCEPT SIMULATOR</p>
             <p class="font-mono text-cyan-500 text-sm tracking-widest mt-2">SYSTEM CALIBRATION</p>
         </div>
         <div class="flex-grow flex flex-col justify-center items-center py-4 w-full">
@@ -298,7 +299,7 @@
         <!-- Header -->
         <div class="flex justify-between items-end border-b border-cyan-900/50 pb-4 mb-4 glass-panel px-6 py-4 rounded-t-lg">
             <div class="flex items-center">
-                <img src="logo.png" alt="AIAREL Logo" class="h-10 mr-4">
+                <img src="logo.png" alt="AIAREL" class="h-8 mr-6 object-contain">
                 <div class="flex flex-col justify-center border-l border-cyan-900/50 pl-4">
                     <div class="flex items-center gap-2">
                         <span class="text-cyan-400 font-mono text-xs tracking-widest">[OVERSIGHT_ACTIVE]</span>
@@ -462,7 +463,7 @@
 
                 <!-- Final CTA Panel overlay over the map -->
                 <div id="cta-panel" class="w-full h-full flex-col items-center justify-center hidden fade-in z-30 absolute inset-0 bg-black/80 backdrop-blur-sm p-4">
-                    <img src="logo.png" alt="AIAREL Logo" class="h-16 w-auto mb-4">
+                    <img src="logo.png" alt="AIAREL" class="h-16 mb-4 object-contain">
                     <p class="font-mono text-xs text-cyan-300 text-center mb-2 mt-4 leading-relaxed max-w-sm">
                         Orchestrate your systems. Activate your property. Elevate your profits.
                     </p>
@@ -514,8 +515,7 @@
     <script>
         // --- AUDIO ENGINE ---
         let synth, successSynth, alertSynth;
-        let ambientPad, ambientSub, ambientReverb, ambientFilter;
-        let ambientInterval = null;
+        let ambientAudio = null;
 
         async function initAudio() {
             // Start Tone.js context (requires user gesture)
@@ -541,70 +541,6 @@
                 envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
             }).toDestination();
             alertSynth.volume.value = -20;
-
-            // --- GOD-MODE AMBIENT SOUNDSCAPE ENGINE ---
-            initAmbientSoundscape();
-        }
-
-        function initAmbientSoundscape() {
-            try {
-                // Reverb & Warm Low-Pass Filter Bus
-                ambientFilter = new Tone.Filter({
-                    frequency: 1200, // Brightened for a techy feel
-                    type: "lowpass",
-                    rolloff: -12
-                });
-                
-                ambientReverb = new Tone.Reverb({
-                    decay: 8, // Tighter spatial feel
-                    preDelay: 0.1,
-                    wet: 0.6
-                });
-
-                ambientFilter.connect(ambientReverb);
-                ambientReverb.toDestination();
-
-                // Multivoice Polyphonic Pad Synth for Serene Harmonics
-                ambientPad = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: 'fatsine', count: 3, spread: 15 }, // Smoother, glassy tech sound
-                    envelope: { attack: 0.2, decay: 2, sustain: 0.6, release: 4 }
-                }).connect(ambientFilter);
-                ambientPad.volume.value = -18; // Adjusted level for brightness
-
-                // Sub-harmonic foundational drone
-                ambientSub = new Tone.Synth({
-                    oscillator: { type: 'triangle' },
-                    envelope: { attack: 0.2, decay: 1, sustain: 1, release: 4 }
-                }).connect(ambientFilter);
-                ambientSub.volume.value = -24;
-
-                // Generative ambient chord progressions (Tech-forward, optimistic open chords)
-                const chords = [
-                    ['C3', 'G3', 'D4', 'E4'], // Cadd9
-                    ['F2', 'C3', 'G3', 'A3', 'E4'], // Fmaj9
-                    ['D3', 'A3', 'E4', 'F#4'], // Dadd9
-                    ['Bb2', 'F3', 'C4', 'D4']  // Bbadd9
-                ];
-
-                let chordIndex = 0;
-                
-                // Trigger initial sustained chord
-                ambientPad.triggerAttackRelease(chords[0], '8n');
-                ambientSub.triggerAttackRelease('D2', '8n');
-
-                // Slowly morph ambient pad every 7 seconds
-                ambientInterval = setInterval(() => {
-                    chordIndex = (chordIndex + 1) % chords.length;
-                    const currentChord = chords[chordIndex];
-                    ambientPad.triggerAttackRelease(currentChord, 6.5);
-                    if (chordIndex % 2 === 0) {
-                        ambientSub.triggerAttackRelease(currentChord[0], 6.5);
-                    }
-                }, 7000);
-
-            } catch (err) {
-                console.warn('Ambient soundscape initialization deferred:', err);
-            }
         }
 
         function playSound(type) {
@@ -740,6 +676,12 @@
         async function startAudioGate() {
             await initAudio();
             playSound('blip');
+            
+            // Start custom background loop
+            ambientAudio = new Audio('soundscape.mp3');
+            ambientAudio.loop = true;
+            ambientAudio.volume = 0.25; // Subdued volume so it doesn't overpower your voiceover
+            ambientAudio.play().catch(e => console.warn("soundscape.mp3 not found or blocked.", e));
             
             document.getElementById('screen-audio-init').classList.add('fade-out');
             setTimeout(() => {
