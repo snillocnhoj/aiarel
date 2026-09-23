@@ -473,6 +473,22 @@
                     <button class="btn-action py-3.5 px-8 rounded font-mono text-sm tracking-widest font-bold shadow-[0_0_20px_rgba(34,211,238,0.4)]" onclick="window.open('https://aiarel.com', '_blank')">
                         BOOK WALKTHROUGH
                     </button>
+                    
+                    <div class="mt-12 flex flex-col items-center border-t border-cyan-900/50 pt-6 w-full max-w-sm fade-in" style="animation-delay: 1.5s; opacity: 0; animation-fill-mode: forwards;">
+                        <p class="font-mono text-[10px] text-cyan-600 tracking-widest mb-4">AUTHORIZE COLLEAGUE ACCESS</p>
+                        <div class="flex gap-4">
+                            <button onclick="shareLinkedIn()" class="w-10 h-10 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/50 text-cyan-400 hover:bg-cyan-400/20 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:-translate-y-0.5 transition-all" title="Share via LinkedIn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                            </button>
+                            <button onclick="shareEmail()" class="w-10 h-10 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/50 text-cyan-400 hover:bg-cyan-400/20 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:-translate-y-0.5 transition-all" title="Transmit via Email">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            </button>
+                            <button onclick="copyLink()" class="w-10 h-10 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/50 text-cyan-400 hover:bg-cyan-400/20 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:-translate-y-0.5 transition-all relative group" title="Copy Secure Link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                <span id="copy-tooltip" class="absolute -top-10 left-1/2 -translate-x-1/2 text-[9px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 px-2.5 py-1 rounded opacity-0 transition-opacity pointer-events-none whitespace-nowrap shadow-[0_0_10px_rgba(34,211,238,0.2)]">LINK COPIED</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1017,6 +1033,37 @@
                     }, 500);
                 });
             });
+        }
+
+        function shareLinkedIn() {
+            playSound('blip');
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+        }
+
+        function shareEmail() {
+            playSound('blip');
+            const url = encodeURIComponent(window.location.href);
+            const subject = encodeURIComponent('AIAREL Guest Oversight Simulation');
+            const body = encodeURIComponent('I thought you might find this venue oversight and activation concept simulation valuable. You can authorize access to the interface here:\n\n') + url;
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
+        function copyLink() {
+            playSound('blip');
+            // Using document.execCommand('copy') for better cross-iframe compatibility
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = window.location.href;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            
+            const tooltip = document.getElementById('copy-tooltip');
+            tooltip.classList.remove('opacity-0');
+            setTimeout(() => {
+                tooltip.classList.add('opacity-0');
+            }, 2500);
         }
     </script>
 </body>
