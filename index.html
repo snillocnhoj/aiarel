@@ -234,6 +234,31 @@
             border-radius: 50%;
             animation: pulse-ring 0.5s ease-out infinite;
         }
+
+        /* NEW: Input Required Pulsing Animations */
+        @keyframes input-glow-pulse {
+            0%, 100% { border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
+            50% { border-color: rgba(34, 211, 238, 1); box-shadow: 0 0 25px rgba(34, 211, 238, 0.8); }
+        }
+        .input-pulse {
+            animation: input-glow-pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes input-glow-pulse-subtle {
+            0%, 100% { border-color: rgba(34, 211, 238, 0.3); box-shadow: none; }
+            50% { border-color: rgba(34, 211, 238, 0.8); box-shadow: 0 0 15px rgba(34, 211, 238, 0.4); }
+        }
+        .input-pulse-subtle {
+            animation: input-glow-pulse-subtle 1.5s infinite ease-in-out;
+        }
+
+        @keyframes text-alert-pulse {
+            0%, 100% { opacity: 0.7; text-shadow: none; color: #fff; }
+            50% { opacity: 1; text-shadow: 0 0 12px rgba(34, 211, 238, 0.9); color: #22d3ee; }
+        }
+        .text-alert-pulse {
+            animation: text-alert-pulse 1.5s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex items-center justify-center relative">
@@ -246,7 +271,7 @@
             <p class="font-mono text-cyan-400 text-[10px] tracking-widest leading-relaxed">GUEST OVERSIGHT & ACTIVATION<br>CONCEPT SIMULATOR</p>
         </div>
         <p class="font-mono text-cyan-500 text-xs tracking-widest mb-8">AUTHORIZE COMMUNICATION</p>
-        <button class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full" onclick="startAudioGate()">
+        <button class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full input-pulse" onclick="startAudioGate()">
             INITIALIZE AUDIO INTERFACE
         </button>
     </div>
@@ -262,7 +287,7 @@
             <div class="w-full max-w-sm space-y-5 mb-8 text-left">
                 <div id="q1-container">
                     <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">DEFINE ECOSYSTEM</label>
-                    <select id="select-ecosystem" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none" onchange="showNextConfig('q2-container')">
+                    <select id="select-ecosystem" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="showNextConfig('q2-container')">
                         <option value="" disabled selected>Select Ecosystem...</option>
                         <option value="Integrated Resort">Integrated Resort</option>
                         <option value="Luxury Hotel">Luxury Hotel</option>
@@ -271,7 +296,7 @@
                 </div>
                 <div id="q2-container" class="hidden opacity-0 transition-opacity duration-500">
                     <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">PRIMARY INEFFICIENCY</label>
-                    <select id="select-inefficiency" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none" onchange="showNextConfig('q3-container')">
+                    <select id="select-inefficiency" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="showNextConfig('q3-container')">
                         <option value="" disabled selected>Select Inefficiency...</option>
                         <option>Premature venue exit (Lost Dwell Time)</option>
                         <option>Low per-capita ancillary spend</option>
@@ -280,7 +305,7 @@
                 </div>
                 <div id="q3-container" class="hidden opacity-0 transition-opacity duration-500">
                     <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">COMMAND ROLE</label>
-                    <select id="select-role" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none" onchange="showNextConfig('auth-btn')">
+                    <select id="select-role" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="showNextConfig('auth-btn')">
                         <option value="" disabled selected>Select Role...</option>
                         <option>Revenue Optimization (Commercial)</option>
                         <option>Guest Experience (Operations)</option>
@@ -288,7 +313,7 @@
                     </select>
                 </div>
             </div>
-            <button id="auth-btn" class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full max-w-sm hidden opacity-0 transition-opacity duration-500" onclick="initializeSystem()">
+            <button id="auth-btn" class="btn-action py-3.5 px-8 rounded font-mono tracking-widest text-sm font-bold w-full max-w-sm hidden opacity-0 transition-opacity duration-500 input-pulse" onclick="initializeSystem()">
                 AUTHORIZE CONNECTION
             </button>
         </div>
@@ -515,9 +540,9 @@
                     <p class="font-mono text-xs text-cyan-700 tracking-widest mb-4">COMMAND INTERFACE</p>
                     
                     <div id="action-panel" class="w-full flex flex-col gap-3 hidden flex-grow justify-center">
-                        <p id="action-prompt" class="font-mono text-sm text-white text-center mb-3">ACTION REQUIRED</p>
-                        <button id="btn-passive" class="btn-terminal py-2.5 px-4 rounded font-mono text-[11px] tracking-widest" onclick="handleAction('passive')">PASSIVE OBSERVATION</button>
-                        <button id="btn-active" class="btn-action py-2.5 px-4 rounded font-mono text-[11px] tracking-widest font-bold" onclick="handleAction('active')">ACTIVATE AIAREL</button>
+                        <p id="action-prompt" class="font-mono text-sm text-white text-center mb-3 text-alert-pulse">ACTION REQUIRED</p>
+                        <button id="btn-passive" class="btn-terminal py-2.5 px-4 rounded font-mono text-[11px] tracking-widest input-pulse-subtle" onclick="handleAction('passive')">PASSIVE OBSERVATION</button>
+                        <button id="btn-active" class="btn-action py-2.5 px-4 rounded font-mono text-[11px] tracking-widest font-bold input-pulse" onclick="handleAction('active')">ACTIVATE AIAREL</button>
                     </div>
                     
                     <div id="action-waiting" class="w-full h-full flex items-center justify-center font-mono text-xs tracking-widest text-cyan-600 typing">
@@ -718,6 +743,12 @@
             if (el) {
                 el.classList.remove('hidden');
                 setTimeout(() => el.classList.remove('opacity-0'), 50);
+            }
+            
+            // Remove pulsing from the completed dropdown
+            if (event && event.target) {
+                event.target.classList.remove('input-pulse-subtle');
+                event.target.classList.add('border-cyan-900/40');
             }
         }
 
