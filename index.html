@@ -106,7 +106,7 @@
     <div class="scanline"></div>
 
     <!-- PRE-INITIALIZATION AUDIO GATE -->
-    <div id="screen-audio-init" class="w-full max-w-lg p-10 glass-panel rounded-xl z-30 flex flex-col items-center text-center fade-in absolute">
+    <div id="screen-audio-init" class="w-[calc(100%-2rem)] sm:w-full max-w-lg p-6 sm:p-10 glass-panel rounded-xl z-30 flex flex-col items-center text-center fade-in absolute mx-4 sm:mx-0">
         <div class="mb-6 flex flex-col justify-center items-center">
             <img src="logo.png" alt="AIAREL" class="h-12 mb-4 object-contain">
             <p class="font-mono text-cyan-400 text-[10px] tracking-widest leading-relaxed">GUEST OVERSIGHT & ACTIVATION<br>CONCEPT SIMULATOR</p>
@@ -118,7 +118,7 @@
     </div>
 
     <!-- CALIBRATION SCREEN -->
-    <div id="screen-calibration" class="w-full max-w-2xl p-10 glass-panel rounded-xl z-20 flex-col absolute hidden">
+    <div id="screen-calibration" class="w-[calc(100%-2rem)] sm:w-full max-w-2xl p-6 sm:p-10 glass-panel rounded-xl z-20 flex-col absolute hidden max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
         <div class="mb-8 border-b border-cyan-900/50 pb-6 text-center flex flex-col items-center">
             <img src="logo.png" alt="AIAREL" class="h-10 mb-3 object-contain">
             <p class="font-mono text-cyan-400 text-[10px] tracking-widest leading-relaxed mb-3">GUEST OVERSIGHT & ACTIVATION<br>CONCEPT SIMULATOR</p>
@@ -164,32 +164,32 @@
     </div>
 
     <!-- MAIN DASHBOARD -->
-    <div id="screen-dashboard" class="w-full h-full p-4 md:p-6 hidden flex-col z-10 absolute inset-0 bg-[#050505]">
+    <div id="screen-dashboard" class="w-full h-full p-2 sm:p-4 md:p-6 hidden flex-col z-10 absolute inset-0 bg-[#050505] overflow-hidden">
         <!-- Header -->
-        <div class="flex justify-between items-end border-b border-cyan-900/50 pb-4 mb-4 glass-panel px-6 py-4 rounded-t-lg">
-            <div class="flex items-center">
-                <img src="logo.png" alt="AIAREL" class="h-8 mr-6 object-contain">
-                <div class="flex flex-col justify-center border-l border-cyan-900/50 pl-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center sm:items-end border-b border-cyan-900/50 pb-3 md:pb-4 mb-3 md:mb-4 glass-panel px-4 md:px-6 py-3 md:py-4 rounded-lg md:rounded-t-lg gap-3 sm:gap-0 shrink-0">
+            <div class="flex flex-col sm:flex-row items-center w-full sm:w-auto">
+                <img src="logo.png" alt="AIAREL" class="h-6 sm:h-8 mb-2 sm:mb-0 sm:mr-6 object-contain">
+                <div class="flex flex-col justify-center items-center sm:items-start border-t sm:border-t-0 sm:border-l border-cyan-900/50 pt-2 sm:pt-0 sm:pl-4 w-full sm:w-auto">
                     <div class="flex items-center gap-2">
-                        <span class="text-cyan-400 font-mono text-xs tracking-widest">[OVERSIGHT_ACTIVE]</span>
-                        <span class="text-[9px] font-mono text-emerald-400/80 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30 ambient-pulse flex items-center gap-1">
+                        <span class="text-cyan-400 font-mono text-[10px] sm:text-xs tracking-widest">[OVERSIGHT_ACTIVE]</span>
+                        <span class="text-[8px] sm:text-[9px] font-mono text-emerald-400/80 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30 ambient-pulse flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> SERENITY ENGINE: 432Hz
                         </span>
                     </div>
-                    <p id="property-label" class="font-mono text-cyan-700 text-[10px] tracking-widest mt-1">MASTER ARCHITECTURAL OVERLAY</p>
+                    <p id="property-label" class="font-mono text-cyan-700 text-[9px] sm:text-[10px] tracking-widest mt-1 text-center sm:text-left">MASTER ARCHITECTURAL OVERLAY</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="font-mono text-gray-500 text-[10px] tracking-widest mb-1">CAPTURED ANCILLARY REVENUE</p>
-                <p class="font-mono text-4xl text-cyan-400 font-bold tracking-wider">$<span id="revenue-counter">0</span></p>
+            <div class="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-cyan-900/50 pt-2 sm:pt-0 mt-2 sm:mt-0">
+                <p class="font-mono text-gray-500 text-[9px] sm:text-[10px] tracking-widest mb-0.5 sm:mb-1">CAPTURED ANCILLARY REVENUE</p>
+                <p class="font-mono text-2xl sm:text-4xl text-cyan-400 font-bold tracking-wider">$<span id="revenue-counter">0</span></p>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-grow flex flex-col md:flex-row gap-4 h-full overflow-hidden relative">
+        <div class="flex-grow flex flex-col md:flex-row gap-3 md:gap-4 min-h-0 overflow-hidden relative">
             
             <!-- Left: The Architectural Master Blueprint -->
-            <div class="w-full md:w-2/3 h-full venue-map rounded-lg relative rounded-b-lg rounded-tl-none" id="map-container">
+            <div class="w-full md:w-2/3 h-[45%] md:h-full venue-map rounded-lg relative" id="map-container">
                 <div class="grid-overlay"></div>
                 
                 <!-- Detailed Architectural Vector Floorplan (Dynamic) -->
@@ -332,25 +332,25 @@
                 <div id="heatmap" class="heatmap-overlay"></div>
                 <div id="guest-dot" class="guest-dot" style="top: 50%; left: 50%; opacity: 0;"></div>
                 
-                <div id="guest-profile" class="absolute glass-panel p-3 rounded border border-cyan-500/50 hidden transition-all duration-500 z-20" style="top: 50%; left: 55%;">
-                    <p class="font-mono text-[10px] text-white font-bold border-b border-cyan-800 pb-1 mb-1">GUEST: A. STERLING</p>
-                    <p class="font-mono text-[9px] text-cyan-300">STATUS: High Value</p>
-                    <p class="font-mono text-[9px] text-gray-400" id="guest-intent">INTENT: Unknown</p>
+                <div id="guest-profile" class="absolute glass-panel p-2 sm:p-3 rounded border border-cyan-500/50 hidden transition-all duration-500 z-20" style="top: 50%; left: 55%;">
+                    <p class="font-mono text-[9px] sm:text-[10px] text-white font-bold border-b border-cyan-800 pb-1 mb-1">GUEST: A. STERLING</p>
+                    <p class="font-mono text-[8px] sm:text-[9px] text-cyan-300">STATUS: High Value</p>
+                    <p class="font-mono text-[8px] sm:text-[9px] text-gray-400" id="guest-intent">INTENT: Unknown</p>
                 </div>
 
-                <div id="cta-panel" class="w-full h-full flex-col items-center justify-center hidden fade-in z-30 absolute inset-0 bg-black/80 backdrop-blur-sm p-4">
-                    <img src="logo.png" alt="AIAREL" class="h-16 mb-4 object-contain">
-                    <p class="font-mono text-xs text-cyan-300 text-center mb-2 mt-4 leading-relaxed max-w-sm">
+                <div id="cta-panel" class="w-full h-full flex-col items-center justify-center hidden fade-in z-30 absolute inset-0 bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+                    <img src="logo.png" alt="AIAREL" class="h-12 sm:h-16 mb-4 object-contain shrink-0">
+                    <p class="font-mono text-[10px] sm:text-xs text-cyan-300 text-center mb-2 mt-2 sm:mt-4 leading-relaxed max-w-sm">
                         Orchestrate your systems. Activate your property. Elevate your profits.
                     </p>
-                    <p class="font-mono text-sm text-cyan-400 text-center mb-8 font-bold tracking-widest">
+                    <p class="font-mono text-xs sm:text-sm text-cyan-400 text-center mb-6 sm:mb-8 font-bold tracking-widest">
                         Discover AIAREL.
                     </p>
-                    <button class="btn-action py-3.5 px-8 rounded font-mono text-sm tracking-widest font-bold shadow-[0_0_20px_rgba(34,211,238,0.4)]" onclick="window.open('https://aiarel.com', '_blank')">
+                    <button class="btn-action py-3 px-6 sm:py-3.5 sm:px-8 rounded font-mono text-xs sm:text-sm tracking-widest font-bold shadow-[0_0_20px_rgba(34,211,238,0.4)]" onclick="window.open('https://aiarel.com', '_blank')">
                         BOOK WALKTHROUGH
                     </button>
                     
-                    <div class="mt-12 flex flex-col items-center border-t border-cyan-900/50 pt-6 w-full max-w-sm fade-in" style="animation-delay: 1.5s; opacity: 0; animation-fill-mode: forwards;">
+                    <div class="mt-8 sm:mt-12 flex flex-col items-center border-t border-cyan-900/50 pt-6 w-full max-w-sm fade-in shrink-0" style="animation-delay: 1.5s; opacity: 0; animation-fill-mode: forwards;">
                         <p class="font-mono text-[10px] text-cyan-600 tracking-widest mb-4">AUTHORIZE COLLEAGUE ACCESS</p>
                         <div class="flex gap-4">
                             <button onclick="shareLinkedIn()" class="w-10 h-10 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/50 text-cyan-400 hover:bg-cyan-400/20 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:-translate-y-0.5 transition-all" title="Share via LinkedIn">
@@ -369,26 +369,26 @@
             </div>
 
             <!-- Right: Controls & Logs -->
-            <div class="w-full md:w-1/3 h-full flex flex-col gap-4 relative z-20">
-                <div class="flex-grow glass-panel rounded-lg p-5 flex flex-col">
-                    <p class="font-mono text-xs text-cyan-700 tracking-widest border-b border-cyan-900/50 pb-2 mb-3 flex justify-between">
+            <div class="w-full md:w-1/3 h-[55%] md:h-full flex flex-col gap-3 md:gap-4 relative z-20 min-h-0">
+                <div class="flex-grow glass-panel rounded-lg p-3 sm:p-5 flex flex-col min-h-0">
+                    <p class="font-mono text-[10px] sm:text-xs text-cyan-700 tracking-widest border-b border-cyan-900/50 pb-2 mb-2 sm:mb-3 flex justify-between">
                         <span>SYSTEM LOG</span>
                         <span id="audio-status" class="text-green-500/50">AUDIO: ONLINE</span>
                     </p>
-                    <div id="sys-log" class="font-mono text-[11px] leading-relaxed text-gray-300 flex-grow overflow-y-auto space-y-3"></div>
+                    <div id="sys-log" class="font-mono text-[10px] sm:text-[11px] leading-relaxed text-gray-300 flex-grow overflow-y-auto space-y-2 sm:space-y-3 pr-2"></div>
                 </div>
 
-                <div class="h-56 glass-panel rounded-lg p-5 flex flex-col relative overflow-hidden">
+                <div class="h-40 sm:h-56 glass-panel rounded-lg p-3 sm:p-5 flex flex-col relative overflow-hidden shrink-0">
                     <div class="absolute top-0 left-0 w-full h-1 bg-cyan-900/50">
                         <div id="progress-bar" class="h-full bg-cyan-400 w-0 transition-all duration-1000"></div>
                     </div>
-                    <p class="font-mono text-xs text-cyan-700 tracking-widest mb-4">COMMAND INTERFACE</p>
-                    <div id="action-panel" class="w-full flex flex-col gap-3 hidden flex-grow justify-center">
-                        <p id="action-prompt" class="font-mono text-sm text-white text-center mb-3 text-alert-pulse">ACTION REQUIRED</p>
-                        <button id="btn-passive" class="btn-terminal py-2.5 px-4 rounded font-mono text-[11px] tracking-widest input-pulse-subtle" onclick="handleAction('passive')">PASSIVE OBSERVATION</button>
-                        <button id="btn-active" class="btn-action py-2.5 px-4 rounded font-mono text-[11px] tracking-widest font-bold input-pulse" onclick="handleAction('active')">ACTIVATE AIAREL</button>
+                    <p class="font-mono text-[10px] sm:text-xs text-cyan-700 tracking-widest mb-2 sm:mb-4">COMMAND INTERFACE</p>
+                    <div id="action-panel" class="w-full flex flex-col gap-2 sm:gap-3 hidden flex-grow justify-center">
+                        <p id="action-prompt" class="font-mono text-xs sm:text-sm text-white text-center mb-1 sm:mb-3 text-alert-pulse">ACTION REQUIRED</p>
+                        <button id="btn-passive" class="btn-terminal py-2 sm:py-2.5 px-3 sm:px-4 rounded font-mono text-[10px] sm:text-[11px] tracking-widest input-pulse-subtle" onclick="handleAction('passive')">PASSIVE OBSERVATION</button>
+                        <button id="btn-active" class="btn-action py-2 sm:py-2.5 px-3 sm:px-4 rounded font-mono text-[10px] sm:text-[11px] tracking-widest font-bold input-pulse" onclick="handleAction('active')">ACTIVATE AIAREL</button>
                     </div>
-                    <div id="action-waiting" class="w-full h-full flex items-center justify-center font-mono text-xs tracking-widest text-cyan-600 typing">
+                    <div id="action-waiting" class="w-full h-full flex items-center justify-center font-mono text-[10px] sm:text-xs tracking-widest text-cyan-600 typing text-center px-4">
                         AWAITING SYSTEM DATA
                     </div>
                 </div>
