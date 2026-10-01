@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIAREL Command Terminal - Resort Edition</title>
+    <title>AIAREL Command Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Include Tone.js for procedural sound effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     
     <style>
@@ -17,27 +16,16 @@
             overflow: hidden;
             user-select: none;
         }
-        .font-mono {
-            font-family: 'Space Mono', monospace;
-        }
+        .font-mono { font-family: 'Space Mono', monospace; }
         
         .scanline {
-            width: 100%;
-            height: 100px;
+            width: 100%; height: 100px;
             background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(34, 211, 238, 0.05) 50%, rgba(0,0,0,0) 100%);
-            opacity: 0.15;
-            position: absolute;
-            bottom: 100%;
-            animation: scanline 8s linear infinite;
-            pointer-events: none;
-            z-index: 50;
+            opacity: 0.15; position: absolute; bottom: 100%;
+            animation: scanline 8s linear infinite; pointer-events: none; z-index: 50;
         }
-        @keyframes scanline {
-            0% { bottom: 100%; }
-            100% { bottom: -100px; }
-        }
+        @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -100px; } }
 
-        /* Resort Architectural Blueprint Map */
         .venue-map {
             background-color: #040910;
             background-image: 
@@ -46,219 +34,72 @@
                 linear-gradient(90deg, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
             background-size: 100% 100%, 40px 40px, 40px 40px;
             border: 1px solid rgba(34, 211, 238, 0.35);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
             box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(34, 211, 238, 0.1);
         }
 
-        /* Blueprint Architectural Elements */
-        .blueprint-svg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
+        .blueprint-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .map-layer { transition: opacity 0.5s ease; }
+        
+        .cad-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.15em; fill: rgba(34, 211, 238, 0.7); font-weight: 600; }
+        .cad-sublabel { font-family: 'Space Mono', monospace; font-size: 7.5px; letter-spacing: 0.1em; fill: rgba(148, 163, 184, 0.6); }
+        .cad-line { stroke: rgba(34, 211, 238, 0.3); stroke-width: 1; fill: none; }
+        .cad-room { fill: rgba(15, 23, 42, 0.55); stroke: rgba(34, 211, 238, 0.35); stroke-width: 1.2; transition: all 0.6s ease; }
+        .cad-room-active { fill: rgba(34, 211, 238, 0.12); stroke: rgba(34, 211, 238, 0.85); filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.4)); }
 
-        .cad-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 9px;
-            letter-spacing: 0.15em;
-            fill: rgba(34, 211, 238, 0.7);
-            font-weight: 600;
-        }
-        .cad-sublabel {
-            font-family: 'Space Mono', monospace;
-            font-size: 7.5px;
-            letter-spacing: 0.1em;
-            fill: rgba(148, 163, 184, 0.6);
-        }
-        .cad-line {
-            stroke: rgba(34, 211, 238, 0.3);
-            stroke-width: 1;
-            fill: none;
-        }
-        .cad-room {
-            fill: rgba(15, 23, 42, 0.55);
-            stroke: rgba(34, 211, 238, 0.35);
-            stroke-width: 1.2;
-            transition: all 0.6s ease;
-        }
-        .cad-room-active {
-            fill: rgba(34, 211, 238, 0.12);
-            stroke: rgba(34, 211, 238, 0.85);
-            filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.4));
-        }
-
-        /* Tactical Grid Overlay */
         .grid-overlay {
-            position: absolute;
-            inset: 0;
-            background-image: 
-                radial-gradient(circle, rgba(34, 211, 238, 0.15) 1px, transparent 1px);
-            background-size: 20px 20px;
-            pointer-events: none;
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(34, 211, 238, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px; pointer-events: none;
         }
 
         .guest-dot {
-            width: 14px;
-            height: 14px;
-            background-color: #22d3ee;
-            border-radius: 50%;
-            position: absolute;
-            box-shadow: 0 0 20px 8px rgba(34, 211, 238, 0.5);
-            transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 10;
+            width: 14px; height: 14px; background-color: #22d3ee; border-radius: 50%; position: absolute;
+            box-shadow: 0 0 20px 8px rgba(34, 211, 238, 0.5); transition: all 2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10;
         }
-        
-        /* Ring animation around the guest */
         .guest-dot::after {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border: 1px solid rgba(34, 211, 238, 0.8);
-            border-radius: 50%;
+            content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border: 1px solid rgba(34, 211, 238, 0.8); border-radius: 50%;
             animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
-
-        @keyframes pulse-ring {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
+        @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
         .heatmap-overlay {
-            position: absolute;
-            top: 40%;
-            left: 30%;
-            width: 40%;
-            height: 40%;
+            position: absolute; top: 40%; left: 30%; width: 40%; height: 40%;
             background: radial-gradient(circle, rgba(239, 68, 68, 0.5) 0%, rgba(239, 68, 68, 0) 70%);
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-            pointer-events: none;
-            z-index: 5;
+            opacity: 0; transition: opacity 1.5s ease-in-out; pointer-events: none; z-index: 5;
         }
         .heatmap-active { opacity: 1; }
-        .heatmap-resolved {
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, rgba(34, 211, 238, 0) 70%);
-            opacity: 1;
-        }
+        .heatmap-resolved { background: radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, rgba(34, 211, 238, 0) 70%); opacity: 1; }
 
-        /* Component Styles */
-        .glass-panel {
-            background: rgba(5, 5, 5, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(34, 211, 238, 0.3);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-terminal {
-            border: 1px solid rgba(34, 211, 238, 0.4);
-            background: rgba(0, 0, 0, 0.5);
-            color: #22d3ee;
-            transition: all 0.3s ease;
-        }
-        .btn-terminal:hover {
-            background: rgba(34, 211, 238, 0.2);
-            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
-            transform: translateY(-1px);
-        }
-        .btn-action {
-            background: rgba(34, 211, 238, 0.15);
-            border: 1px solid #22d3ee;
-            color: #fff;
-            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
-        }
-        .btn-action:hover {
-            background: rgba(34, 211, 238, 0.4);
-            box-shadow: 0 0 25px rgba(34, 211, 238, 0.6);
-        }
+        .glass-panel { background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(34, 211, 238, 0.3); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+        .btn-terminal { border: 1px solid rgba(34, 211, 238, 0.4); background: rgba(0, 0, 0, 0.5); color: #22d3ee; transition: all 0.3s ease; }
+        .btn-terminal:hover { background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); transform: translateY(-1px); }
+        .btn-action { background: rgba(34, 211, 238, 0.15); border: 1px solid #22d3ee; color: #fff; box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); }
+        .btn-action:hover { background: rgba(34, 211, 238, 0.4); box-shadow: 0 0 25px rgba(34, 211, 238, 0.6); }
 
         .fade-in { animation: fadeIn 0.8s ease-in forwards; }
         .fade-out { animation: fadeOut 0.5s ease-out forwards; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; display: none; } }
         
-        .typing::after {
-            content: '█';
-            animation: blink 1s step-start infinite;
-            margin-left: 4px;
-        }
+        .typing::after { content: '█'; animation: blink 1s step-start infinite; margin-left: 4px; }
         @keyframes blink { 50% { opacity: 0; } }
-        
-        .ambient-pulse {
-            animation: pulse-glow 3s ease-in-out infinite;
-        }
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
+        .ambient-pulse { animation: pulse-glow 3s ease-in-out infinite; }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        /* NEW: Ambient Guest styling and Alert state */
-        .ambient-guest-dot {
-            width: 8px;
-            height: 8px;
-            background-color: rgba(34, 211, 238, 0.4);
-            border-radius: 50%;
-            position: absolute;
-            transition: opacity 1.5s ease;
-            z-index: 9;
-            pointer-events: none;
-        }
-        .guest-alert {
-            background-color: #ef4444 !important;
-            box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.5) !important;
-        }
-        .guest-alert::after {
-            border-color: rgba(239, 68, 68, 0.8) !important;
-        }
-        
-        /* NEW: Ambient scanning state for guest targeting */
-        .ambient-scanning {
-            background-color: #22d3ee !important;
-            box-shadow: 0 0 12px 4px rgba(34, 211, 238, 0.8) !important;
-            transform: scale(1.5);
-            z-index: 15;
-            transition: all 0.2s ease;
-        }
-        .ambient-scanning::after {
-            content: '';
-            position: absolute;
-            top: -6px; left: -6px; right: -6px; bottom: -6px;
-            border: 1px solid rgba(34, 211, 238, 0.9);
-            border-radius: 50%;
-            animation: pulse-ring 0.5s ease-out infinite;
-        }
+        .ambient-guest-dot { width: 8px; height: 8px; background-color: rgba(34, 211, 238, 0.4); border-radius: 50%; position: absolute; transition: opacity 1.5s ease; z-index: 9; pointer-events: none; }
+        .guest-alert { background-color: #ef4444 !important; box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.5) !important; }
+        .guest-alert::after { border-color: rgba(239, 68, 68, 0.8) !important; }
+        .ambient-scanning { background-color: #22d3ee !important; box-shadow: 0 0 12px 4px rgba(34, 211, 238, 0.8) !important; transform: scale(1.5); z-index: 15; transition: all 0.2s ease; }
+        .ambient-scanning::after { content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px; border: 1px solid rgba(34, 211, 238, 0.9); border-radius: 50%; animation: pulse-ring 0.5s ease-out infinite; }
 
-        /* NEW: Input Required Pulsing Animations */
-        @keyframes input-glow-pulse {
-            0%, 100% { border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
-            50% { border-color: rgba(34, 211, 238, 1); box-shadow: 0 0 25px rgba(34, 211, 238, 0.8); }
-        }
-        .input-pulse {
-            animation: input-glow-pulse 1.5s infinite ease-in-out;
-        }
-
-        @keyframes input-glow-pulse-subtle {
-            0%, 100% { border-color: rgba(34, 211, 238, 0.3); box-shadow: none; }
-            50% { border-color: rgba(34, 211, 238, 0.8); box-shadow: 0 0 15px rgba(34, 211, 238, 0.4); }
-        }
-        .input-pulse-subtle {
-            animation: input-glow-pulse-subtle 1.5s infinite ease-in-out;
-        }
-
-        @keyframes text-alert-pulse {
-            0%, 100% { opacity: 0.7; text-shadow: none; color: #fff; }
-            50% { opacity: 1; text-shadow: 0 0 12px rgba(34, 211, 238, 0.9); color: #22d3ee; }
-        }
-        .text-alert-pulse {
-            animation: text-alert-pulse 1.5s infinite ease-in-out;
-        }
+        @keyframes input-glow-pulse { 0%, 100% { border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); } 50% { border-color: rgba(34, 211, 238, 1); box-shadow: 0 0 25px rgba(34, 211, 238, 0.8); } }
+        .input-pulse { animation: input-glow-pulse 1.5s infinite ease-in-out; }
+        @keyframes input-glow-pulse-subtle { 0%, 100% { border-color: rgba(34, 211, 238, 0.3); box-shadow: none; } 50% { border-color: rgba(34, 211, 238, 0.8); box-shadow: 0 0 15px rgba(34, 211, 238, 0.4); } }
+        .input-pulse-subtle { animation: input-glow-pulse-subtle 1.5s infinite ease-in-out; }
+        @keyframes text-alert-pulse { 0%, 100% { opacity: 0.7; text-shadow: none; color: #fff; } 50% { opacity: 1; text-shadow: 0 0 12px rgba(34, 211, 238, 0.9); color: #22d3ee; } }
+        .text-alert-pulse { animation: text-alert-pulse 1.5s infinite ease-in-out; }
     </style>
 </head>
 <body class="h-screen w-screen flex items-center justify-center relative">
@@ -285,22 +126,25 @@
         </div>
         <div class="flex-grow flex flex-col justify-center items-center py-4 w-full">
             <div class="w-full max-w-sm space-y-5 mb-8 text-left">
-                <div id="q1-container">
+                <div id="q0-container">
+                    <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">VERTICAL MARKET</label>
+                    <select id="select-vertical" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="populateEcosystems()">
+                        <option value="" disabled selected>Select Vertical...</option>
+                        <option value="Hospitality">Hospitality & Resorts</option>
+                        <option value="LBE">Location-Based Entertainment</option>
+                        <option value="Retail">Retail</option>
+                    </select>
+                </div>
+                <div id="q1-container" class="hidden opacity-0 transition-opacity duration-500">
                     <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">DEFINE ECOSYSTEM</label>
-                    <select id="select-ecosystem" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="showNextConfig('q2-container')">
+                    <select id="select-ecosystem" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="populateInefficiencies()">
                         <option value="" disabled selected>Select Ecosystem...</option>
-                        <option value="Integrated Resort">Integrated Resort</option>
-                        <option value="Luxury Hotel">Luxury Hotel</option>
-                        <option value="Business Hotel">Business Hotel</option>
                     </select>
                 </div>
                 <div id="q2-container" class="hidden opacity-0 transition-opacity duration-500">
                     <label class="font-mono text-[10px] text-cyan-500 mb-1.5 block tracking-widest">PRIMARY INEFFICIENCY</label>
                     <select id="select-inefficiency" class="w-full bg-black/60 border border-cyan-900/80 text-cyan-300 font-mono text-xs p-2.5 rounded outline-none focus:border-cyan-400 transition-colors cursor-pointer appearance-none input-pulse-subtle" onchange="showNextConfig('q3-container')">
                         <option value="" disabled selected>Select Inefficiency...</option>
-                        <option>Premature venue exit (Lost Dwell Time)</option>
-                        <option>Low per-capita ancillary spend</option>
-                        <option>Unpredictable crowd bottlenecks</option>
                     </select>
                 </div>
                 <div id="q3-container" class="hidden opacity-0 transition-opacity duration-500">
@@ -332,7 +176,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> SERENITY ENGINE: 432Hz
                         </span>
                     </div>
-                    <p id="property-label" class="font-mono text-cyan-700 text-[10px] tracking-widest mt-1">MASTER ARCHITECTURAL OVERLAY: GRAND AZURE RESORT & RETREAT</p>
+                    <p id="property-label" class="font-mono text-cyan-700 text-[10px] tracking-widest mt-1">MASTER ARCHITECTURAL OVERLAY</p>
                 </div>
             </div>
             <div class="text-right">
@@ -345,18 +189,15 @@
         <div class="flex-grow flex flex-col md:flex-row gap-4 h-full overflow-hidden relative">
             
             <!-- Left: The Architectural Master Blueprint -->
-            <div class="w-full md:w-2/3 h-full venue-map rounded-lg relative rounded-b-lg rounded-tl-none">
+            <div class="w-full md:w-2/3 h-full venue-map rounded-lg relative rounded-b-lg rounded-tl-none" id="map-container">
                 <div class="grid-overlay"></div>
                 
-                <!-- Detailed Architectural Vector Floorplan -->
-                <svg class="blueprint-svg" viewBox="0 0 1000 650" preserveAspectRatio="none">
+                <!-- Detailed Architectural Vector Floorplan (Dynamic) -->
+                <svg class="blueprint-svg" viewBox="0 0 1000 650" preserveAspectRatio="none" id="master-svg">
                     <defs>
-                        <pattern id="poolHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="0" y2="10" stroke="rgba(34, 211, 238, 0.15)" stroke-width="1.5" />
-                        </pattern>
-                        <pattern id="deckWood" width="8" height="8" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="8" y2="0" stroke="rgba(148, 163, 184, 0.1)" stroke-width="1" />
-                        </pattern>
+                        <pattern id="poolHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="10" stroke="rgba(34, 211, 238, 0.15)" stroke-width="1.5" /></pattern>
+                        <pattern id="deckWood" width="8" height="8" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="8" y2="0" stroke="rgba(148, 163, 184, 0.1)" stroke-width="1" /></pattern>
+                        <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="none" stroke="rgba(34, 211, 238, 0.05)" stroke-width="1"/></pattern>
                     </defs>
 
                     <!-- Property Boundary Perimeter -->
@@ -364,129 +205,139 @@
                     
                     <!-- Coordinate Grid Reference Marks -->
                     <text x="35" y="40" class="cad-sublabel">LAT 24°18'N / ELEV 12m</text>
-                    <text x="860" y="40" class="cad-sublabel">CAD SEC: MASTER-LVL-01</text>
+                    <text x="860" y="40" class="cad-sublabel" id="cad-sector">CAD SEC: MASTER-LVL-01</text>
                     <text x="35" y="620" class="cad-sublabel">STATUS: ALL PROTOCOLS MAPPED</text>
                     <text x="840" y="620" class="cad-sublabel">AIAREL PROPRIETARY GRID</text>
 
-                    <!-- ================= ZONE 1: CABANA CLUB & LAGOON (TOP LEFT) ================= -->
-                    <g id="cad-zone-1">
-                        <!-- Main Pool Deck -->
+                    <!-- MAP 1: RESORT (Default) -->
+                    <g id="map-Hosp-Resort" class="map-layer">
                         <rect x="60" y="55" width="280" height="175" rx="8" fill="url(#deckWood)" class="cad-line" />
-                        <!-- Primary Lagoon Pool -->
                         <path d="M 80,75 Q 160,65 240,75 Q 260,130 240,185 Q 150,195 80,180 Z" fill="url(#poolHatch)" stroke="rgba(34, 211, 238, 0.6)" stroke-width="1.5" />
-                        <!-- Infinity Edge Water Marker -->
-                        <line x1="80" y1="75" x2="240" y2="75" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,2" />
-                        <!-- Private Cabana Modules (1-4) -->
-                        <rect x="70" y="85" width="24" height="24" rx="2" class="cad-room" />
-                        <rect x="70" y="120" width="24" height="24" rx="2" class="cad-room" />
-                        <rect x="70" y="155" width="24" height="24" rx="2" class="cad-room" />
-                        <rect x="235" y="90" width="24" height="24" rx="2" class="cad-room" />
-                        <rect x="235" y="125" width="24" height="24" rx="2" class="cad-room" />
-                        <!-- Pool Bar & Daybed Pavilions -->
-                        <circle cx="160" cy="130" r="14" fill="rgba(15, 23, 42, 0.8)" stroke="rgba(34, 211, 238, 0.4)" />
-                        <text x="145" y="133" class="cad-sublabel" fill="#22d3ee">BAR</text>
-                        <!-- Labels -->
-                        <text x="80" y="48" class="cad-label">ZONE 01 • CABANA CLUB & RECREATION LAGOON</text>
-                        <text x="95" y="100" class="cad-sublabel">CABANA ROW A-D</text>
-                        <text x="140" y="170" class="cad-sublabel">HEATED INFINITY POOL (1.4M)</text>
-                    </g>
-
-                    <!-- ================= ZONE 2: SIGNATURE DINING & WINE PAVILION (TOP RIGHT) ================= -->
-                    <g id="cad-zone-2">
-                        <!-- Dining Enclosure -->
-                        <rect x="680" y="60" width="260" height="200" rx="8" class="cad-room" />
-                        <!-- Show Kitchen Area -->
-                        <rect x="695" y="75" width="100" height="50" class="cad-line" fill="rgba(239, 68, 68, 0.08)" />
-                        <text x="705" y="105" class="cad-sublabel" fill="#f87171">SHOW KITCHEN / EXPEDITE</text>
-                        <!-- Private Dining Room (PDR) -->
-                        <rect x="810" y="75" width="115" height="50" class="cad-line" />
-                        <text x="825" y="105" class="cad-sublabel">CELLAR & RESERVE PDR</text>
-                        <!-- Tables & Seating Grids -->
-                        <circle cx="720" cy="160" r="10" class="cad-line" />
-                        <circle cx="760" cy="160" r="10" class="cad-line" />
-                        <circle cx="800" cy="160" r="10" class="cad-line" />
-                        <circle cx="840" cy="160" r="10" class="cad-line" />
-                        <circle cx="740" cy="205" r="10" class="cad-line" />
-                        <circle cx="780" cy="205" r="10" class="cad-line" />
-                        <circle cx="820" cy="205" r="10" class="cad-line" />
-                        <!-- Outdoor Alfresco Deck -->
-                        <path d="M 680,240 L 940,240 L 940,255 L 680,255 Z" fill="url(#deckWood)" stroke="rgba(34, 211, 238, 0.3)" />
-                        <!-- Labels -->
-                        <text x="685" y="50" class="cad-label">ZONE 02 • THE CITADEL SIGNATURE DINING</text>
-                        <text x="715" y="235" class="cad-sublabel">ALFRESCO TERRACE (COVERS: 180)</text>
-                    </g>
-
-                    <!-- ================= ZONE 4: GRAND LOBBY, ATRIUM & CONCOURSE (CENTER) ================= -->
-                    <g id="cad-zone-4">
-                        <!-- Concourse Structure -->
-                        <rect x="290" y="230" width="410" height="220" rx="10" class="cad-room" />
-                        <!-- Rotunda Centerpiece -->
+                        <text x="80" y="48" class="cad-label">ZONE 01 • CABANA CLUB & LAGOON</text>
+                        
+                        <rect x="680" y="60" width="260" height="200" rx="8" class="cad-room z2-target" />
+                        <text x="685" y="50" class="cad-label">ZONE 02 • SIGNATURE DINING</text>
+                        
+                        <rect x="310" y="475" width="375" height="140" rx="8" class="cad-room z3-target" />
+                        <text x="360" y="465" class="cad-label">ZONE 03 • RESIDENTIAL SUITES</text>
+                        
+                        <rect x="290" y="230" width="410" height="220" rx="10" class="cad-room z4-target" />
                         <circle cx="495" cy="340" r="45" fill="rgba(34, 211, 238, 0.04)" stroke="rgba(34, 211, 238, 0.5)" stroke-dasharray="3,3" />
-                        <circle cx="495" cy="340" r="20" fill="none" stroke="rgba(34, 211, 238, 0.7)" />
-                        <!-- Porte-Cochere & Arrival Vestibule -->
-                        <rect x="430" y="210" width="130" height="25" rx="4" class="cad-line" fill="rgba(15, 23, 42, 0.8)" />
-                        <text x="445" y="226" class="cad-sublabel" fill="#38bdf8">MAIN PORTE-COCHÈRE</text>
-                        <!-- Reception Pods -->
-                        <rect x="320" y="260" width="60" height="18" rx="3" class="cad-line" />
-                        <text x="330" y="272" class="cad-sublabel">CHECK-IN</text>
-                        <rect x="320" y="295" width="60" height="18" rx="3" class="cad-line" />
-                        <text x="325" y="307" class="cad-sublabel">CONCIERGE</text>
-                        <!-- Promenade Corridor to North Exit / Gateway -->
-                        <line x1="495" y1="210" x2="495" y2="35" stroke="rgba(34, 211, 238, 0.3)" stroke-width="2" stroke-dasharray="6,4" />
-                        <text x="505" y="70" class="cad-sublabel">CORRIDOR 01: NORTH PROPERTY GATEWAY</text>
-                        <!-- Promenade Corridor to East Dining -->
-                        <line x1="680" y1="340" x2="780" y2="260" stroke="rgba(34, 211, 238, 0.3)" stroke-width="2" stroke-dasharray="6,4" />
-                        <!-- Labels -->
-                        <text x="380" y="375" class="cad-label">ZONE 04 • GRAND ATRIUM & MEZZANINE LOUNGE</text>
-                        <text x="440" y="395" class="cad-sublabel">CENTRAL VECTOR AXIS</text>
+                        <text x="380" y="375" class="cad-label">ZONE 04 • GRAND ATRIUM / LOBBY</text>
                     </g>
 
-                    <!-- ================= ZONE 3: GUEST RESIDENCE SUITES & VILLAS (BOTTOM) ================= -->
-                    <g id="cad-zone-3">
-                        <!-- Suites Wing Outer -->
-                        <rect x="310" y="475" width="375" height="140" rx="8" class="cad-room" />
-                        <!-- Suite Partitions (Villa Blocks 301-308) -->
-                        <line x1="400" y1="475" x2="400" y2="615" class="cad-line" />
-                        <line x1="495" y1="475" x2="495" y2="615" class="cad-line" />
-                        <line x1="590" y1="475" x2="590" y2="615" class="cad-line" />
-                        <line x1="310" y1="545" x2="685" y2="545" class="cad-line" />
-                        <!-- Suite Labels -->
-                        <text x="330" y="515" class="cad-sublabel">SUITE 301</text>
-                        <text x="425" y="515" class="cad-sublabel">SUITE 302</text>
-                        <text x="520" y="515" class="cad-sublabel">SUITE 303</text>
-                        <text x="615" y="515" class="cad-sublabel">PRESIDENTIAL</text>
-                        <text x="330" y="585" class="cad-sublabel">SUITE 304</text>
-                        <text x="425" y="585" class="cad-sublabel">SUITE 305</text>
-                        <text x="520" y="585" class="cad-sublabel">SUITE 306</text>
-                        <text x="615" y="585" class="cad-sublabel">SUITE 307</text>
-                        <!-- Corridor Axis -->
-                        <text x="360" y="465" class="cad-label">ZONE 03 • OCEANSIDE RESIDENTIAL SUITES & VILLAS</text>
+                    <!-- MAP 2: LUXURY HOTEL -->
+                    <g id="map-Hosp-Luxury" class="map-layer hidden">
+                        <rect x="350" y="50" width="300" height="550" rx="4" class="cad-room z4-target" />
+                        <text x="360" y="40" class="cad-label">TOWER CORE</text>
+                        <rect x="370" y="450" width="260" height="130" class="cad-line z1-target" />
+                        <text x="380" y="465" class="cad-sublabel">ZONE 1: GRAND FOYER & CONCIERGE</text>
+                        <rect x="100" y="300" width="230" height="280" class="cad-room z2-target" />
+                        <text x="110" y="290" class="cad-label">ZONE 2: MICHELIN DINING ROOM</text>
+                        <rect x="370" y="70" width="260" height="120" class="cad-line z3-target" />
+                        <text x="380" y="85" class="cad-sublabel">ZONE 3: ROOFTOP SPA & WELLNESS</text>
+                        <rect x="670" y="70" width="230" height="180" class="cad-room z4-target" />
+                        <text x="680" y="60" class="cad-label">ZONE 4: PENTHOUSE SUITES</text>
                     </g>
 
-                    <!-- Auxiliary Zones (Spa & Executive Pavilion) -->
-                    <rect x="60" y="440" width="190" height="160" rx="6" class="cad-room" />
-                    <text x="75" y="465" class="cad-label">LOTUS WELLNESS & SPA</text>
-                    <text x="75" y="485" class="cad-sublabel">HYDROTHERMAL CIRCS • 12 SUITES</text>
+                    <!-- MAP 3: BUSINESS HOTEL -->
+                    <g id="map-Hosp-Business" class="map-layer hidden">
+                        <rect x="100" y="100" width="800" height="450" fill="url(#gridPattern)" class="cad-room z4-target" />
+                        <rect x="120" y="120" width="250" height="150" class="cad-line z1-target" />
+                        <text x="130" y="140" class="cad-sublabel">ZONE 1: LOBBY & TRANSIT</text>
+                        <rect x="630" y="120" width="250" height="410" class="cad-line z2-target" />
+                        <text x="640" y="140" class="cad-sublabel">ZONE 2: EXEC MEETING ROOMS</text>
+                        <rect x="120" y="380" width="250" height="150" class="cad-line z3-target" />
+                        <text x="130" y="400" class="cad-sublabel">ZONE 3: BUSINESS CENTER</text>
+                        <text x="450" y="90" class="cad-label">ZONE 4: TOWER GUEST ROOMS (ABOVE)</text>
+                    </g>
 
-                    <rect x="750" y="440" width="190" height="160" rx="6" class="cad-room" />
-                    <text x="765" y="465" class="cad-label">CONFERENCE & BALLROOM</text>
-                    <text x="765" y="485" class="cad-sublabel">PLENARY PAVILION 1-3</text>
+                    <!-- MAP 4: THEME PARK -->
+                    <g id="map-LBE-ThemePark" class="map-layer hidden">
+                        <circle cx="500" cy="350" r="80" class="cad-room z1-target" />
+                        <text x="440" y="340" class="cad-label">ZONE 1: MAIN ENTRY</text>
+                        <path d="M 500,270 Q 600,100 800,150 L 750,250 Z" class="cad-line z2-target" fill="rgba(34, 211, 238, 0.05)" />
+                        <text x="650" y="180" class="cad-sublabel">ZONE 2: THRILL COASTER</text>
+                        <path d="M 420,350 Q 200,300 150,500 L 250,550 Z" class="cad-line z3-target" fill="rgba(34, 211, 238, 0.05)" />
+                        <text x="180" y="450" class="cad-sublabel">ZONE 3: KIDS ZONE</text>
+                        <path d="M 580,350 Q 800,450 750,600 L 650,550 Z" class="cad-line z4-target" fill="rgba(34, 211, 238, 0.05)" />
+                        <text x="680" y="500" class="cad-sublabel">ZONE 4: MEGA-STORE</text>
+                    </g>
+
+                    <!-- MAP 5: FEC -->
+                    <g id="map-LBE-FEC" class="map-layer hidden">
+                        <rect x="100" y="50" width="800" height="550" class="cad-room" />
+                        <rect x="150" y="100" width="400" height="250" class="cad-line z1-target" />
+                        <text x="160" y="120" class="cad-label">ZONE 1: MAIN ARCADE FLOOR</text>
+                        <rect x="600" y="100" width="250" height="250" class="cad-line z2-target" />
+                        <text x="610" y="120" class="cad-label">ZONE 2: LASER TAG ARENA</text>
+                        <rect x="150" y="400" width="300" height="150" class="cad-line z3-target" />
+                        <text x="160" y="420" class="cad-label">ZONE 3: PRIZE REDEMPTION</text>
+                        <rect x="500" y="400" width="350" height="150" class="cad-line z4-target" />
+                        <text x="510" y="420" class="cad-label">ZONE 4: SPORTS BAR & KITCHEN</text>
+                    </g>
+
+                    <!-- MAP 6: EXHIBITION / MUSEUM -->
+                    <g id="map-LBE-Exhibition" class="map-layer hidden">
+                        <rect x="400" y="50" width="200" height="550" class="cad-room z1-target" />
+                        <text x="410" y="40" class="cad-label">ZONE 1: GRAND ATRIUM</text>
+                        <rect x="100" y="100" width="250" height="200" class="cad-line z2-target" />
+                        <text x="110" y="120" class="cad-label">ZONE 2: ANCIENT HISTORY</text>
+                        <rect x="650" y="350" width="250" height="200" class="cad-line z3-target" />
+                        <text x="660" y="370" class="cad-label">ZONE 3: MODERN ART HALL</text>
+                        <rect x="100" y="400" width="250" height="150" class="cad-line z4-target" />
+                        <text x="110" y="420" class="cad-label">ZONE 4: CAFE & GIFT SHOP</text>
+                    </g>
+
+                    <!-- MAP 7: LARGE SHOPPING MALL -->
+                    <g id="map-Retail-Mall" class="map-layer hidden">
+                        <circle cx="500" cy="325" r="100" class="cad-room z1-target" />
+                        <text x="440" y="325" class="cad-label">ZONE 1: CENTER ATRIUM</text>
+                        <rect x="450" y="50" width="100" height="150" class="cad-line z2-target" />
+                        <text x="460" y="40" class="cad-sublabel">ZONE 2: NORTH ANCHOR</text>
+                        <rect x="450" y="450" width="100" height="150" class="cad-line z3-target" />
+                        <text x="460" y="620" class="cad-sublabel">ZONE 3: SOUTH ANCHOR</text>
+                        <rect x="150" y="275" width="200" height="100" class="cad-line z4-target" />
+                        <text x="160" y="265" class="cad-sublabel">ZONE 4: FOOD COURT</text>
+                        <path d="M 350,300 L 410,300 M 590,300 L 650,300 M 480,200 L 480,240 M 480,410 L 480,450" stroke="rgba(34, 211, 238, 0.4)" stroke-width="2" />
+                    </g>
+
+                    <!-- MAP 8: BIG BOX RETAILER -->
+                    <g id="map-Retail-BigBox" class="map-layer hidden">
+                        <rect x="50" y="50" width="900" height="550" class="cad-room" />
+                        <line x1="50" y1="450" x2="950" y2="450" class="cad-line" stroke-dasharray="5,5"/>
+                        <rect x="100" y="100" width="350" height="300" class="cad-line z1-target" fill="url(#gridPattern)"/>
+                        <text x="110" y="90" class="cad-label">ZONE 1: HOME & GROCERY</text>
+                        <rect x="550" y="100" width="150" height="150" class="cad-line z2-target" />
+                        <text x="560" y="90" class="cad-label">ZONE 2: ELECTRONICS</text>
+                        <rect x="750" y="100" width="150" height="300" class="cad-line z3-target" />
+                        <text x="760" y="90" class="cad-label">ZONE 3: APPAREL</text>
+                        <rect x="100" y="480" width="800" height="80" class="cad-line z4-target" />
+                        <text x="110" y="470" class="cad-label">ZONE 4: FRONT CHECKOUT</text>
+                    </g>
+
+                    <!-- MAP 9: AIRPORT / DUTY FREE -->
+                    <g id="map-Retail-Airport" class="map-layer hidden">
+                        <rect x="50" y="250" width="200" height="150" class="cad-room z1-target" />
+                        <text x="60" y="240" class="cad-label">ZONE 1: SECURITY</text>
+                        <path d="M 250,250 L 450,250 L 450,400 L 250,400 Z" class="cad-line z2-target" fill="rgba(34, 211, 238, 0.05)"/>
+                        <text x="260" y="240" class="cad-label">ZONE 2: DUTY FREE PLAZA</text>
+                        <rect x="300" y="100" width="100" height="100" class="cad-line z3-target" />
+                        <text x="310" y="90" class="cad-label">ZONE 3: LOUNGES</text>
+                        <rect x="450" y="300" width="500" height="50" class="cad-line z4-target" fill="url(#gridPattern)"/>
+                        <text x="460" y="290" class="cad-label">ZONE 4: GATE AREA</text>
+                    </g>
                 </svg>
 
-                <!-- Heatmap -->
                 <div id="heatmap" class="heatmap-overlay"></div>
-
-                <!-- Guest Dot -->
                 <div id="guest-dot" class="guest-dot" style="top: 50%; left: 50%; opacity: 0;"></div>
                 
-                <!-- Live Profile Popover (Hidden initially) -->
                 <div id="guest-profile" class="absolute glass-panel p-3 rounded border border-cyan-500/50 hidden transition-all duration-500 z-20" style="top: 50%; left: 55%;">
                     <p class="font-mono text-[10px] text-white font-bold border-b border-cyan-800 pb-1 mb-1">GUEST: A. STERLING</p>
-                    <p class="font-mono text-[9px] text-cyan-300">STATUS: High Value / Day 2</p>
+                    <p class="font-mono text-[9px] text-cyan-300">STATUS: High Value</p>
                     <p class="font-mono text-[9px] text-gray-400" id="guest-intent">INTENT: Unknown</p>
                 </div>
 
-                <!-- Final CTA Panel overlay over the map -->
                 <div id="cta-panel" class="w-full h-full flex-col items-center justify-center hidden fade-in z-30 absolute inset-0 bg-black/80 backdrop-blur-sm p-4">
                     <img src="logo.png" alt="AIAREL" class="h-16 mb-4 object-contain">
                     <p class="font-mono text-xs text-cyan-300 text-center mb-2 mt-4 leading-relaxed max-w-sm">
@@ -519,32 +370,24 @@
 
             <!-- Right: Controls & Logs -->
             <div class="w-full md:w-1/3 h-full flex flex-col gap-4 relative z-20">
-                
-                <!-- System Log -->
                 <div class="flex-grow glass-panel rounded-lg p-5 flex flex-col">
                     <p class="font-mono text-xs text-cyan-700 tracking-widest border-b border-cyan-900/50 pb-2 mb-3 flex justify-between">
                         <span>SYSTEM LOG</span>
                         <span id="audio-status" class="text-green-500/50">AUDIO: ONLINE</span>
                     </p>
-                    <div id="sys-log" class="font-mono text-[11px] leading-relaxed text-gray-300 flex-grow overflow-y-auto space-y-3">
-                        <!-- Logs injected by JS -->
-                    </div>
+                    <div id="sys-log" class="font-mono text-[11px] leading-relaxed text-gray-300 flex-grow overflow-y-auto space-y-3"></div>
                 </div>
 
-                <!-- Command Interface -->
                 <div class="h-56 glass-panel rounded-lg p-5 flex flex-col relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-cyan-900/50">
                         <div id="progress-bar" class="h-full bg-cyan-400 w-0 transition-all duration-1000"></div>
                     </div>
-                    
                     <p class="font-mono text-xs text-cyan-700 tracking-widest mb-4">COMMAND INTERFACE</p>
-                    
                     <div id="action-panel" class="w-full flex flex-col gap-3 hidden flex-grow justify-center">
                         <p id="action-prompt" class="font-mono text-sm text-white text-center mb-3 text-alert-pulse">ACTION REQUIRED</p>
                         <button id="btn-passive" class="btn-terminal py-2.5 px-4 rounded font-mono text-[11px] tracking-widest input-pulse-subtle" onclick="handleAction('passive')">PASSIVE OBSERVATION</button>
                         <button id="btn-active" class="btn-action py-2.5 px-4 rounded font-mono text-[11px] tracking-widest font-bold input-pulse" onclick="handleAction('active')">ACTIVATE AIAREL</button>
                     </div>
-                    
                     <div id="action-waiting" class="w-full h-full flex items-center justify-center font-mono text-xs tracking-widest text-cyan-600 typing">
                         AWAITING SYSTEM DATA
                     </div>
@@ -554,95 +397,177 @@
     </div>
 
     <script>
+        // --- MASTER DATA MATRIX (9x9) ---
+        const database = {
+            "Hospitality": {
+                "Integrated Resort": {
+                    mapId: "map-Hosp-Resort",
+                    inefficiencies: ["Premature venue exit", "Low per-capita ancillary spend", "Unpredictable crowd bottlenecks"],
+                    scenarios: [
+                        { intent: "INTENT: Returning to Suite", prompt: "PREVENT LOST DWELL TIME", btnActive: "TRIGGER CONTEXTUAL OFFER", logPre: "Guest momentum is fading. Historical data predicts a return to the room and a lost afternoon.", logActive: "Offer sent. Guest intercepted. Ancillary spend captured.", logPassive: "Guest returned to suite. Afternoon ancillary spend lost.", rev: 45, posStart: {top:'25%',left:'20%'}, posPassive: {top:'80%',left:'50%'}, posActive: {top:'20%',left:'25%'}, alert: false, heat: false, audioPre: '3', audioAct: '4', audioPas: '5' },
+                        { intent: "INTENT: Off-Property Dining", prompt: "CAPTURE ANCILLARY SPEND", btnActive: "ACTIVATE ENVIRONMENTAL CUE", logPre: "Guest is bypassing signature dining. Trajectory indicates property exit.", logActive: "Digital signage and VIP offer deployed. Guest rerouted to Signature Dining.", logPassive: "Guest exited property. Dinner revenue lost to competitor.", rev: 185, posStart: {top:'50%',left:'50%'}, posPassive: {top:'5%',left:'50%'}, posActive: {top:'25%',left:'80%'}, alert: false, heat: false, audioPre: '6', audioAct: '7', audioPas: '8' },
+                        { intent: "INTENT: Seeking Shelter", prompt: "RESOLVE OPERATIONAL BOTTLENECK", btnActive: "SYSTEM ORCHESTRATION", logPre: "Weather anomaly detected. Sudden indoor migration forming severe lobby bottleneck.", logActive: "Gamified flash-promotions deployed. Crowd dispersed. Staff re-routed. Harmony restored.", logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'50%',left:'50%'}, posPassive: {top:'50%',left:'50%'}, posActive: {top:'50%',left:'50%'}, alert: true, heat: true, audioPre: '9', audioAct: '10', audioPas: '11' }
+                    ]
+                },
+                "Luxury Hotel": {
+                    mapId: "map-Hosp-Luxury",
+                    inefficiencies: ["Unused premium inventory (Spa)", "Off-property dining", "Valet/Checkout queuing"],
+                    scenarios: [
+                        { intent: "INTENT: Exiting Spa Area", prompt: "CAPTURE PREMIUM INVENTORY", btnActive: "OFFER IMMEDIATE VIP ACCESS", logPre: "Guest bypassing the spa. High probability of leaving property and leaving premium slots unsold.", logActive: "VIP offer pushed. Guest intercepted. Spa inventory booked.", logPassive: "Guest left property. Spa inventory remains unsold.", rev: 250, posStart: {top:'15%',left:'50%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'15%',left:'50%'}, alert: false, heat: false },
+                        { intent: "INTENT: Off-Property Dining", prompt: "CAPTURE F&B SPEND", btnActive: "PUSH CHEF TASTING OFFER", logPre: "Guest is bypassing Michelin dining. Trajectory indicates exit to competitor.", logActive: "Chef tasting offer deployed. Guest rerouted to dining room.", logPassive: "Guest exited property. Dinner revenue lost to competitor.", rev: 320, posStart: {top:'75%',left:'50%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'65%',left:'25%'}, alert: false, heat: false },
+                        { intent: "INTENT: Checking Out", prompt: "RESOLVE VALET CONGESTION", btnActive: "STAGGER CHECKOUTS / COMP DRINKS", logPre: "Checkout rush detected. Severe bottleneck forming at valet and concierge.", logActive: "Staggered checkouts and comp drinks deployed. Crowd dispersed. Harmony restored.", logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'75%',left:'50%'}, posPassive: {top:'75%',left:'50%'}, posActive: {top:'75%',left:'50%'}, alert: true, heat: true }
+                    ]
+                },
+                "Business Hotel": {
+                    mapId: "map-Hosp-Business",
+                    inefficiencies: ["Lost post-conference F&B", "Low off-hours retail/cafe spend", "Elevator/Lobby congestion"],
+                    scenarios: [
+                        { intent: "INTENT: Retreating to Room", prompt: "PREVENT LOST F&B SPEND", btnActive: "PUSH LOUNGE HAPPY HOUR", logPre: "Guest retreating to room post-meeting. Evening food and beverage revenue at risk.", logActive: "Happy hour invite sent. Guest rerouted. F&B spend captured.", logPassive: "Guest returned to room. Evening F&B revenue lost.", rev: 65, posStart: {top:'40%',left:'75%'}, posPassive: {top:'15%',left:'50%'}, posActive: {top:'25%',left:'25%'}, alert: false, heat: false },
+                        { intent: "INTENT: Off-Property Coffee", prompt: "KEEP GUEST ON-SITE", btnActive: "PUSH MOBILE ORDER", logPre: "Guest leaving tower for off-site coffee. Morning revenue at risk.", logActive: "Mobile order prompt sent. Guest rerouted to lobby cafe.", logPassive: "Guest exited property. Coffee revenue lost to competitor.", rev: 15, posStart: {top:'15%',left:'50%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'25%',left:'25%'}, alert: false, heat: false },
+                        { intent: "INTENT: Post-Conference Transit", prompt: "RESOLVE LOBBY CONGESTION", btnActive: "REROUTE ELEVATORS", logPre: "Conference dismissed. Severe elevator and lobby bottleneck forming.", logActive: "Service elevators opened. Crowd dispersed. Harmony restored.", logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'25%',left:'50%'}, posPassive: {top:'25%',left:'50%'}, posActive: {top:'25%',left:'50%'}, alert: true, heat: true }
+                    ]
+                }
+            },
+            "LBE": {
+                "Theme Park": {
+                    mapId: "map-LBE-ThemePark",
+                    inefficiencies: ["Mid-afternoon fatigue / Early exit", "Low merchandise attach rate", "Ride queue bottlenecks"],
+                    scenarios: [
+                        { intent: "INTENT: Heading to Exit", prompt: "PREVENT EARLY EXIT", btnActive: "TRIGGER VIP PARADE VIEWING", logPre: "Family group fatiguing. Heat index and trajectory predicts early exit before dinner.", logActive: "VIP viewing offered. Family intercepted. Dinner revenue secured.", logPassive: "Family exited park. Dinner and merchandise revenue lost.", rev: 120, posStart: {top:'50%',left:'50%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'50%',left:'50%'}, alert: false, heat: false },
+                        { intent: "INTENT: Bypassing Merchandise", prompt: "CAPTURE MERCHANDISE SPEND", btnActive: "TRIGGER RIDE PHOTO DISCOUNT", logPre: "Guests exiting thrill ride without entering mega-store. Attach rate dropping.", logActive: "Photo discount deployed. Guests rerouted to merchandise counter.", logPassive: "Guests bypassed store. Merchandise revenue lost.", rev: 45, posStart: {top:'35%',left:'75%'}, posPassive: {top:'50%',left:'50%'}, posActive: {top:'80%',left:'70%'}, alert: false, heat: false },
+                        { intent: "INTENT: Joining Coaster Line", prompt: "RESOLVE QUEUE BOTTLENECK", btnActive: "DEPLOY VIRTUAL QUEUE / FLASH MOB", logPre: "Surge detected. Severe bottleneck forming at Thrill Coaster.", logActive: "Virtual queue and flash mob deployed. Crowd dispersed. Harmony restored.", logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'35%',left:'75%'}, posPassive: {top:'35%',left:'75%'}, posActive: {top:'35%',left:'75%'}, alert: true, heat: true }
+                    ]
+                },
+                "Family Entertainment Center": {
+                    mapId: "map-LBE-FEC",
+                    inefficiencies: ["Card balance exhaustion", "Low F&B cross-sell", "Prize redemption congestion"],
+                    scenarios: [
+                        { intent: "INTENT: Exiting Property", prompt: "MAXIMIZE DWELL TIME", btnActive: "AUTO-PUSH RELOAD MATCH", logPre: "Card balance depleted. Trajectory indicates immediate property exit.", logActive: "Reload match sent. Guest intercepted. Gaming spend extended.", logPassive: "Guest exited property. Afternoon revenue lost.", rev: 50, posStart: {top:'30%',left:'35%'}, posPassive: {top:'90%',left:'15%'}, posActive: {top:'30%',left:'35%'}, alert: false, heat: false },
+                        { intent: "INTENT: Bypassing F&B", prompt: "CROSS-SELL F&B", btnActive: "PUSH PIZZA COMBO TO TERMINAL", logPre: "Guests playing arcade for two hours without dining. F&B revenue at risk.", logActive: "Pizza combo pushed to gaming screen. F&B order captured.", logPassive: "Guests continued gaming. F&B revenue lost.", rev: 35, posStart: {top:'30%',left:'35%'}, posPassive: {top:'30%',left:'35%'}, posActive: {top:'75%',left:'65%'}, alert: false, heat: false },
+                        { intent: "INTENT: Claiming Prizes", prompt: "RESOLVE REDEMPTION BOTTLENECK", btnActive: "ACTIVATE DIGITAL QUEUEING", logPre: "Surge detected. Severe bottleneck forming at prize redemption counter.", logActive: "Digital queueing and trivia deployed. Crowd dispersed. Harmony restored.", logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'75%',left:'30%'}, posPassive: {top:'75%',left:'30%'}, posActive: {top:'75%',left:'30%'}, alert: true, heat: true }
+                    ]
+                },
+                "Exhibition / Museum": {
+                    mapId: "map-LBE-Exhibition",
+                    inefficiencies: ["Skipping high-margin exhibits", "Gift shop bypass", "Tour group flow disruption"],
+                    scenarios: [
+                        { intent: "INTENT: Speed-walking", prompt: "INCREASE ENGAGEMENT", btnActive: "TRIGGER AUDIO CUE", logPre: "Visitor accelerating pace. Skipping special exhibits and losing engagement.", logActive: "Audio cue triggered. Visitor intercepted. Dwell time increased.", logPassive: "Visitor sped through. Engagement and cross-sell lost.", rev: 25, posStart: {top:'30%',left:'25%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'70%',left:'75%'}, alert: false, heat: false },
+                        { intent: "INTENT: Bypassing Gift Shop", prompt: "CAPTURE RETAIL SPEND", btnActive: "TRIGGER LIMITED EDITION PROMO", logPre: "Visitor bypassing gift shop. Ancillary retail revenue at risk.", logActive: "Limited promo deployed. Visitor rerouted to gift shop.", logPassive: "Visitor exited museum. Retail revenue lost.", rev: 40, posStart: {top:'70%',left:'75%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'75%',left:'25%'}, alert: false, heat: false },
+                        { intent: "INTENT: Viewing Exhibit", prompt: "RESOLVE FLOW DISRUPTION", btnActive: "REROUTE INDEPENDENT VISITORS", logPre: "Tour group halted. Severe bottleneck forming in main exhibition hall.", logActive: "Independent visitors rerouted. Crowd dispersed. Harmony restored.", logPassive: "Bottleneck sustained. Visitor satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'40%',left:'50%'}, posPassive: {top:'40%',left:'50%'}, posActive: {top:'40%',left:'50%'}, alert: true, heat: true }
+                    ]
+                }
+            },
+            "Retail": {
+                "Large Shopping Mall": {
+                    mapId: "map-Retail-Mall",
+                    inefficiencies: ["Single-purchase exits", "Low cross-wing pollination", "Event/Santa queue congestion"],
+                    scenarios: [
+                        { intent: "INTENT: Returning to Car", prompt: "PREVENT LOST DWELL TIME", btnActive: "TRIGGER CROSS-WING PROMO", logPre: "Shopper returning to parking structure after single purchase. Lost dwell time.", logActive: "Promo sent. Shopper intercepted. Dwell time doubled.", logPassive: "Shopper exited mall. Additional retail revenue lost.", rev: 85, posStart: {top:'20%',left:'50%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'80%',left:'50%'}, alert: false, heat: false },
+                        { intent: "INTENT: Heading to Exit", prompt: "CROSS-SELL F&B", btnActive: "OFFER VIP LOUNGE VOUCHER", logPre: "Shopper has heavy bags and is heading to car. Dining revenue at risk.", logActive: "Lounge voucher deployed. Shopper rerouted to center atrium dining.", logPassive: "Shopper exited mall. Dining revenue lost.", rev: 45, posStart: {top:'80%',left:'50%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'50%',left:'25%'}, alert: false, heat: false },
+                        { intent: "INTENT: Meeting Santa/Event", prompt: "RESOLVE EVENT CONGESTION", btnActive: "DEPLOY VIRTUAL EVENT QUEUE", logPre: "Event surge detected. Severe bottleneck forming in center atrium.", logActive: "Virtual queue deployed. Crowd dispersed to retail. Harmony restored.", logPassive: "Bottleneck sustained. Shopper satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'50%',left:'50%'}, posPassive: {top:'50%',left:'50%'}, posActive: {top:'50%',left:'50%'}, alert: true, heat: true }
+                    ]
+                },
+                "Big Box Retailer": {
+                    mapId: "map-Retail-BigBox",
+                    inefficiencies: ["Aisle wandering / Cart abandonment", "Missed high-margin accessory attach", "Checkout lane overflow"],
+                    scenarios: [
+                        { intent: "INTENT: Leaving Empty Handed", prompt: "PREVENT ABANDONMENT", btnActive: "DISPATCH ASSOCIATE", logPre: "Shopper lingering in electronics without item. Cart abandonment highly likely.", logActive: "Associate dispatched. Shopper assisted. High-ticket item secured.", logPassive: "Shopper left empty handed. Electronics revenue lost.", rev: 450, posStart: {top:'25%',left:'60%'}, posPassive: {top:'90%',left:'50%'}, posActive: {top:'25%',left:'60%'}, alert: false, heat: false },
+                        { intent: "INTENT: Heading to Checkout", prompt: "CAPTURE ACCESSORY ATTACH", btnActive: "PUSH SOUNDBAR BUNDLE", logPre: "Shopper heading to checkout with television but no accessories. Attach margin lost.", logActive: "Bundle offer pushed to app. Accessory added to cart.", logPassive: "Shopper checked out. Accessory margin lost.", rev: 125, posStart: {top:'25%',left:'60%'}, posPassive: {top:'80%',left:'50%'}, posActive: {top:'80%',left:'50%'}, alert: false, heat: false },
+                        { intent: "INTENT: Checking Out", prompt: "RESOLVE CHECKOUT OVERFLOW", btnActive: "OPEN MOBILE AISLE CHECKOUT", logPre: "Holiday surge detected. Severe bottleneck forming at front checkout.", logActive: "Mobile checkout associates deployed. Lines cleared. Harmony restored.", logPassive: "Bottleneck sustained. Shopper satisfaction dropping. Labor strained.", rev: 0, posStart: {top:'80%',left:'50%'}, posPassive: {top:'80%',left:'50%'}, posActive: {top:'80%',left:'50%'}, alert: true, heat: true }
+                    ]
+                },
+                "Airport / Duty Free": {
+                    mapId: "map-Retail-Airport",
+                    inefficiencies: ["Idle gate dwell time", "Missed duty-free conversion", "Security spillover into retail"],
+                    scenarios: [
+                        { intent: "INTENT: Waiting at Gate", prompt: "CAPTURE LOST DWELL TIME", btnActive: "PUSH LOUNGE ACCESS PASS", logPre: "Passenger sitting at gate ninety minutes before boarding. Lost retail dwell time.", logActive: "Lounge pass pushed. Passenger intercepted. Premium access captured.", logPassive: "Passenger waited at gate. Retail dwell time lost.", rev: 60, posStart: {top:'50%',left:'70%'}, posPassive: {top:'50%',left:'70%'}, posActive: {top:'25%',left:'35%'}, alert: false, heat: false },
+                        { intent: "INTENT: Window Shopping", prompt: "CAPTURE LUXURY SPEND", btnActive: "TRIGGER TIME-SENSITIVE DISCOUNT", logPre: "Passenger browsing cosmetics but leaving. High-margin conversion at risk.", logActive: "Boarding-pass discount deployed. High-margin sale captured.", logPassive: "Passenger left store. High-margin conversion lost.", rev: 180, posStart: {top:'50%',left:'35%'}, posPassive: {top:'50%',left:'70%'}, posActive: {top:'50%',left:'35%'}, alert: false, heat: false },
+                        { intent: "INTENT: Clearing Security", prompt: "RESOLVE SECURITY SPILLOVER", btnActive: "ACTIVATE OVERFLOW LANES", logPre: "Flight surge detected. Security queue spilling into retail footprint.", logActive: "Overflow lanes activated. Retail footprint cleared. Harmony restored.", logPassive: "Bottleneck sustained. Passenger satisfaction dropping. Retail blocked.", rev: 0, posStart: {top:'50%',left:'15%'}, posPassive: {top:'50%',left:'15%'}, posActive: {top:'50%',left:'15%'}, alert: true, heat: true }
+                    ]
+                }
+            }
+        };
+
         // --- AUDIO ENGINE ---
         let synth, successSynth, alertSynth;
         let ambientAudio = null;
 
         async function initAudio() {
-            // Start Tone.js context (requires user gesture)
             await Tone.start();
-            
-            // Standard UI blip
-            synth = new Tone.Synth({
-                oscillator: { type: 'sine' },
-                envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
-            }).toDestination();
+            synth = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
             synth.volume.value = -15;
-
-            // Revenue captured sound
-            successSynth = new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: 'triangle' },
-                envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 }
-            }).toDestination();
+            successSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 } }).toDestination();
             successSynth.volume.value = -10;
-
-            // Alert sound
-            alertSynth = new Tone.Synth({
-                oscillator: { type: 'square' },
-                envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
-            }).toDestination();
+            alertSynth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
             alertSynth.volume.value = -20;
         }
 
         function playSound(type) {
             if (!synth) return;
             if (type === 'blip') synth.triggerAttackRelease('C5', '16n');
-            if (type === 'alert') {
-                alertSynth.triggerAttackRelease('E4', '8n');
-                setTimeout(() => alertSynth.triggerAttackRelease('E4', '8n'), 200);
-            }
-            if (type === 'success') {
-                successSynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '4n');
-            }
+            if (type === 'alert') { alertSynth.triggerAttackRelease('E4', '8n'); setTimeout(() => alertSynth.triggerAttackRelease('E4', '8n'), 200); }
+            if (type === 'success') successSynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '4n');
         }
 
+        // The Smart Audio System: MP3 -> TTS Fallback -> Timer Fallback
         function speakText(text, audioId = null) {
             return new Promise((resolve) => {
-                // If no audio file ID is provided or Audio isn't supported, fallback to a timer
                 if (!audioId || typeof Audio === 'undefined') {
-                    setTimeout(resolve, calculateReadingTime(text));
+                    fallbackTTS(text, resolve);
                     return;
                 }
                 
                 const audio = new Audio(`${audioId}.mp3`);
-                
-                // When the MP3 finishes naturally, resolve the promise to trigger the next event
-                audio.onended = resolve;
-                
-                // If the file is missing (404) or fails to play, fallback to the timer so the demo doesn't freeze
-                audio.onerror = () => {
-                    console.warn(`Could not load or play ${audioId}.mp3. Falling back to timer.`);
-                    setTimeout(resolve, calculateReadingTime(text));
-                };
-                
-                // Optional: Update UI status to show MP3 is playing
                 const audioStatus = document.getElementById('audio-status');
-                if (audioStatus) {
-                    audioStatus.innerText = 'AUDIO: PLAYING';
-                    audioStatus.classList.replace('text-green-500/50', 'text-cyan-400');
-                    audio.addEventListener('ended', () => {
+                
+                audio.onplay = () => {
+                    if (audioStatus) {
+                        audioStatus.innerText = 'AUDIO: PLAYING';
+                        audioStatus.classList.replace('text-green-500/50', 'text-cyan-400');
+                    }
+                };
+
+                audio.onended = () => {
+                    if (audioStatus) {
                         audioStatus.innerText = 'AUDIO: ONLINE';
                         audioStatus.classList.replace('text-cyan-400', 'text-green-500/50');
-                    });
-                }
+                    }
+                    resolve();
+                };
+                
+                // If MP3 fails (e.g. 404), fallback to synthetic voice reading the text!
+                audio.onerror = () => {
+                    console.warn(`Could not load ${audioId}.mp3. Falling back to synthetic voice (Scratch Track).`);
+                    fallbackTTS(text, resolve);
+                };
                 
                 audio.play().catch(e => {
-                    console.warn(`Playback blocked for ${audioId}.mp3. Ensure user interaction.`, e);
-                    setTimeout(resolve, calculateReadingTime(text));
+                    console.warn(`Playback blocked for ${audioId}.mp3.`, e);
+                    fallbackTTS(text, resolve);
                 });
             });
         }
 
-        // Helper to calculate wait times based on text length (used as a fallback if MP3 is missing)
-        function calculateReadingTime(text) {
-            return Math.max(3000, text.length * 70 + 1000);
+        function fallbackTTS(text, resolveCallback) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.05; // Slightly faster to sound crisp
+                utterance.pitch = 0.9;
+                utterance.onend = resolveCallback;
+                utterance.onerror = () => { setTimeout(resolveCallback, Math.max(3000, text.length * 70)); };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                // Absolute fallback: Just a timer
+                setTimeout(resolveCallback, Math.max(3000, text.length * 70));
+            }
         }
 
         // --- STATE VARIABLES ---
         let revenue = 0;
         let currentScenario = 0;
+        let activeEcosystemData = null;
+        let selectedScenarios = [];
         
-        // DOM Elements
         const elRevenue = document.getElementById('revenue-counter');
         const elLog = document.getElementById('sys-log');
         const guestDot = document.getElementById('guest-dot');
@@ -656,111 +581,74 @@
         const btnActive = document.getElementById('btn-active');
         const progressBar = document.getElementById('progress-bar');
 
-        const scenarios = [
-            {
-                // Dwell time save
-                logPre: "Guest momentum is fading. Historical data predicts a return to the room and a lost afternoon.",
-                intentText: "INTENT: Returning to Suite",
-                prompt: "PREVENT LOST DWELL TIME",
-                btnActiveText: "TRIGGER CONTEXTUAL OFFER",
-                logPassive: "Guest returned to suite. Afternoon ancillary spend lost.",
-                logActive: "Offer sent. Guest intercepted. Ancillary spend captured.",
-                revenueGained: 45,
-                posStart: { top: '25%', left: '20%' }, // Pool
-                posPassive: { top: '80%', left: '50%' }, // Suite
-                posActive: { top: '20%', left: '25%' },   // Stays at pool/cabana
-                isAlert: false,
-                audioPre: 3,
-                audioActive: 4,
-                audioPassive: 5
-            },
-            {
-                // High margin cross-sell
-                logPre: "Guest is bypassing signature dining. Trajectory indicates property exit.",
-                intentText: "INTENT: Off-Property Dining",
-                prompt: "CAPTURE ANCILLARY SPEND",
-                btnActiveText: "ACTIVATE ENVIRONMENTAL CUE",
-                logPassive: "Guest exited property. Dinner revenue lost to competitor.",
-                logActive: "Digital signage and VIP offer deployed. Guest rerouted to Signature Dining.",
-                revenueGained: 185,
-                posStart: { top: '50%', left: '50%' }, // Main drag
-                posPassive: { top: '5%', left: '50%' }, // Exit
-                posActive: { top: '25%', left: '80%' },  // Dining
-                isAlert: false,
-                audioPre: 6,
-                audioActive: 7,
-                audioPassive: 8
-            },
-            {
-                // Operational bottleneck
-                logPre: "Weather anomaly detected. Sudden indoor migration forming severe lobby bottleneck.",
-                intentText: "INTENT: Seeking Shelter",
-                prompt: "RESOLVE OPERATIONAL BOTTLENECK",
-                btnActiveText: "SYSTEM ORCHESTRATION",
-                logPassive: "Bottleneck sustained. Guest satisfaction dropping. Labor strained.",
-                logActive: "Gamified flash-promotions deployed. Crowd dispersed. Staff re-routed. Harmony restored.",
-                revenueGained: 0,
-                posStart: { top: '50%', left: '50%' },
-                posPassive: { top: '50%', left: '50%' }, 
-                posActive: { top: '50%', left: '50%' },
-                isAlert: true,
-                isHeatmap: true,
-                audioPre: 9,
-                audioActive: 10,
-                audioPassive: 11
+        // --- CASCADING DROPDOWNS ---
+        function populateEcosystems() {
+            const vert = document.getElementById('select-vertical').value;
+            const ecoSelect = document.getElementById('select-ecosystem');
+            ecoSelect.innerHTML = '<option value="" disabled selected>Select Ecosystem...</option>';
+            
+            if(vert && database[vert]) {
+                Object.keys(database[vert]).forEach(eco => {
+                    const opt = document.createElement('option');
+                    opt.value = eco; opt.innerText = eco;
+                    ecoSelect.appendChild(opt);
+                });
+                showNextConfig('q1-container');
             }
-        ];
+        }
 
-        // --- NEW INITIALIZATION FLOW ---
+        function populateInefficiencies() {
+            const vert = document.getElementById('select-vertical').value;
+            const eco = document.getElementById('select-ecosystem').value;
+            const ineffSelect = document.getElementById('select-inefficiency');
+            ineffSelect.innerHTML = '<option value="" disabled selected>Select Inefficiency...</option>';
 
-        // 1. Unlocks audio and transitions to calibration questions
+            if(vert && eco && database[vert][eco]) {
+                database[vert][eco].inefficiencies.forEach(ineff => {
+                    const opt = document.createElement('option');
+                    opt.value = ineff; opt.innerText = ineff;
+                    ineffSelect.appendChild(opt);
+                });
+                showNextConfig('q2-container');
+            }
+        }
+
         async function startAudioGate() {
             await initAudio();
             playSound('blip');
             
-            // Start custom background loop
             ambientAudio = new Audio('soundscape.mp3');
-            ambientAudio.loop = true;
-            ambientAudio.volume = 0.25; // Subdued volume so it doesn't overpower your voiceover
-            ambientAudio.play().catch(e => console.warn("soundscape.mp3 not found or blocked.", e));
+            ambientAudio.loop = true; ambientAudio.volume = 0.25;
+            ambientAudio.play().catch(e => console.warn("soundscape.mp3 not found. Continuing.", e));
             
             document.getElementById('screen-audio-init').classList.add('fade-out');
             setTimeout(() => {
                 document.getElementById('screen-audio-init').style.display = 'none';
-                
                 const calScreen = document.getElementById('screen-calibration');
-                calScreen.classList.remove('hidden');
-                calScreen.classList.add('flex', 'fade-in');
+                calScreen.classList.remove('hidden'); calScreen.classList.add('flex', 'fade-in');
             }, 500);
 
-            // Play the first voiceover clip
             speakText("Communications established. Welcome to AIAREL. Please calibrate system parameters.", 1);
         }
 
-        // Sequential question helper
         function showNextConfig(id) {
             const el = document.getElementById(id);
-            if (el) {
-                el.classList.remove('hidden');
-                setTimeout(() => el.classList.remove('opacity-0'), 50);
-            }
-            
-            // Remove pulsing from the completed dropdown
-            if (event && event.target) {
-                event.target.classList.remove('input-pulse-subtle');
-                event.target.classList.add('border-cyan-900/40');
-            }
+            if (el) { el.classList.remove('hidden'); setTimeout(() => el.classList.remove('opacity-0'), 50); }
+            if (event && event.target) { event.target.classList.remove('input-pulse-subtle'); event.target.classList.add('border-cyan-900/40'); }
         }
 
-        // 2. Completes calibration and transitions to dashboard
         function initializeSystem() {
             playSound('blip');
+            const vert = document.getElementById('select-vertical').value;
+            const eco = document.getElementById('select-ecosystem').value;
             
-            // Set dynamic header based on calibration choice
-            const ecoSelect = document.getElementById('select-ecosystem');
-            if(ecoSelect) {
-                document.getElementById('property-label').innerText = `MASTER ARCHITECTURAL OVERLAY: ${ecoSelect.value.toUpperCase()}`;
-            }
+            activeEcosystemData = database[vert][eco];
+            selectedScenarios = activeEcosystemData.scenarios;
+            
+            // Set Dynamic Header & Load Correct SVG Map
+            document.getElementById('property-label').innerText = `MASTER ARCHITECTURAL OVERLAY: ${eco.toUpperCase()}`;
+            document.querySelectorAll('.map-layer').forEach(layer => layer.classList.add('hidden'));
+            document.getElementById(activeEcosystemData.mapId).classList.remove('hidden');
 
             document.getElementById('screen-calibration').classList.replace('fade-in', 'fade-out');
             setTimeout(() => {
@@ -774,16 +662,12 @@
         function addLog(text, isAlert = false, audioId = null) {
             const p = document.createElement('p');
             p.className = `typing ${isAlert ? 'text-red-400' : 'text-cyan-400'}`;
-            // Prepend timestamp
             const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "numeric", minute: "numeric", second: "numeric" });
             p.innerHTML = `<span class="text-gray-500 mr-2">[${time}]</span> ${text}`;
             
             elLog.appendChild(p);
             elLog.scrollTop = elLog.scrollHeight;
-            
             setTimeout(() => p.classList.remove('typing'), 1500);
-            
-            // Returns a promise that resolves when the audio is done playing
             return speakText(text, audioId);
         }
 
@@ -791,310 +675,198 @@
             if(amount === 0) return;
             playSound('success');
             revenue += amount;
-            
             let start = parseInt(elRevenue.innerText);
-            let end = revenue;
             let duration = 1000;
             let startTime = null;
-            
             function step(timestamp) {
                 if (!startTime) startTime = timestamp;
                 let progress = Math.min((timestamp - startTime) / duration, 1);
-                elRevenue.innerText = Math.floor(progress * (end - start) + start);
-                if (progress < 1) window.requestAnimationFrame(step);
-                else elRevenue.innerText = end;
+                elRevenue.innerText = Math.floor(progress * (revenue - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step); else elRevenue.innerText = revenue;
             }
             window.requestAnimationFrame(step);
         }
 
-        // Ambient Guests Logic
         let ambientGuests = [];
         let bottleneckGuests = [];
         function createAmbientGuests() {
             const map = document.querySelector('.venue-map');
             for(let i=0; i<40; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'ambient-guest-dot';
-                // Spread randomly across the blueprint
+                const dot = document.createElement('div'); dot.className = 'ambient-guest-dot';
                 dot.style.top = Math.floor(Math.random() * 75 + 10) + '%';
                 dot.style.left = Math.floor(Math.random() * 85 + 5) + '%';
-                map.appendChild(dot);
-                ambientGuests.push(dot);
+                map.appendChild(dot); ambientGuests.push(dot);
             }
         }
         function clearAmbientGuests() {
             ambientGuests.forEach(dot => dot.style.opacity = '0');
-            setTimeout(() => {
-                ambientGuests.forEach(dot => dot.remove());
-                ambientGuests = [];
-            }, 1500);
+            setTimeout(() => { ambientGuests.forEach(dot => dot.remove()); ambientGuests = []; }, 1500);
         }
 
-        function createBottleneckCrowd() {
+        function createBottleneckCrowd(heatPos) {
             const map = document.querySelector('.venue-map');
+            // Position heatmap accurately
+            heatmap.style.top = `calc(${heatPos.top} - 20%)`;
+            heatmap.style.left = `calc(${heatPos.left} - 20%)`;
+            
             for(let i=0; i<35; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'ambient-guest-dot';
-                
-                // Spawn guests from outside corridors (North, East, West)
+                const dot = document.createElement('div'); dot.className = 'ambient-guest-dot';
                 const startPos = Math.random();
-                if (startPos < 0.33) {
-                    dot.style.top = '5%'; dot.style.left = '50%'; // North
-                } else if (startPos < 0.66) {
-                    dot.style.top = '50%'; dot.style.left = '5%'; // West
-                } else {
-                    dot.style.top = '50%'; dot.style.left = '95%'; // East
-                }
-                
-                dot.style.opacity = '0';
-                dot.style.transition = 'all 3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1s ease';
-                map.appendChild(dot);
-                bottleneckGuests.push(dot);
+                if (startPos < 0.33) { dot.style.top = '5%'; dot.style.left = '50%'; } 
+                else if (startPos < 0.66) { dot.style.top = '50%'; dot.style.left = '5%'; } 
+                else { dot.style.top = '50%'; dot.style.left = '95%'; }
+                dot.style.opacity = '0'; dot.style.transition = 'all 3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1s ease';
+                map.appendChild(dot); bottleneckGuests.push(dot);
 
-                // Rush to center lobby anomaly
                 setTimeout(() => {
                     dot.style.opacity = '1';
-                    dot.style.top = (45 + Math.random() * 10) + '%';
-                    dot.style.left = (45 + Math.random() * 10) + '%';
+                    // Rush to the heat center
+                    dot.style.top = `calc(${heatPos.top} + ${Math.random() * 10 - 5}%)`;
+                    dot.style.left = `calc(${heatPos.left} + ${Math.random() * 10 - 5}%)`;
                 }, 100);
             }
         }
 
         function disperseBottleneckCrowd() {
             bottleneckGuests.forEach(dot => {
-                // Scatter away to various edges/destinations
-                dot.style.top = (Math.random() * 100) + '%';
-                dot.style.left = (Math.random() * 100) + '%';
-                dot.style.opacity = '0';
+                dot.style.top = (Math.random() * 100) + '%'; dot.style.left = (Math.random() * 100) + '%'; dot.style.opacity = '0';
             });
-            setTimeout(() => {
-                bottleneckGuests.forEach(dot => dot.remove());
-                bottleneckGuests = [];
-            }, 3000);
+            setTimeout(() => { bottleneckGuests.forEach(dot => dot.remove()); bottleneckGuests = []; }, 3000);
         }
 
         function startSimulation() {
-            const initText = "System initialized. Establishing oversight.";
             progressBar.style.width = '33%';
-            
-            // Wait for audio to finish before loading scenario 0
-            addLog(initText, false, 2).then(() => {
-                loadScenario(0);
-            });
+            addLog("System initialized. Establishing oversight.", false, 2).then(() => { loadScenario(0); });
+        }
+
+        function highlightZone(targetClass) {
+            document.querySelectorAll('.cad-room, .cad-line').forEach(el => el.classList.remove('cad-room-active'));
+            const activeMap = document.getElementById(activeEcosystemData.mapId);
+            const target = activeMap.querySelector('.' + targetClass);
+            if(target) target.classList.add('cad-room-active');
         }
 
         function loadScenario(index) {
-            if (index >= scenarios.length) {
-                endSimulation();
-                return;
-            }
-
+            if (index >= selectedScenarios.length) { endSimulation(); return; }
             currentScenario = index;
-            const scenario = scenarios[index];
+            const scenario = selectedScenarios[index];
             playSound('blip');
 
-            // Reset active architectural highlights
-            document.querySelectorAll('.cad-room').forEach(el => el.classList.remove('cad-room-active'));
-            
-            // Reset UI
             panelAction.classList.add('hidden');
             panelWaiting.classList.remove('hidden');
             panelWaiting.innerText = "ANALYZING GUEST VECTOR...";
 
             if (index === 0) {
-                // Initial Scenario: Show crowded resort, scan targets, lock on, isolate.
+                highlightZone('z1-target');
                 createAmbientGuests();
-                
-                guestDot.style.transition = 'none'; // Snap to start
-                guestDot.style.top = scenario.posStart.top;
-                guestDot.style.left = scenario.posStart.left;
-                guestDot.classList.remove('guest-alert');
-                guestDot.style.opacity = 0; // Hide A. Sterling initially while scanning others
-                
-                // Force reflow
-                void guestDot.offsetWidth; 
+                guestDot.style.transition = 'none'; guestDot.style.top = scenario.posStart.top; guestDot.style.left = scenario.posStart.left;
+                guestDot.classList.remove('guest-alert'); guestDot.style.opacity = 0; void guestDot.offsetWidth; 
                 guestDot.style.transition = 'all 2s cubic-bezier(0.4, 0, 0.2, 1)';
                 
                 let scanCount = 0;
-                let maxScans = 5;
-                
-                // The "God Mode" scanning sequence
                 function scanNextGuest() {
-                    // Clear previous visual scans
                     document.querySelectorAll('.ambient-scanning').forEach(el => el.classList.remove('ambient-scanning'));
-                    
-                    if (scanCount < maxScans) {
-                        // Play a very subtle high blip for the scan
+                    if (scanCount < 5) {
                         if (synth) synth.triggerAttackRelease('E6', '32n');
-                        
                         let randomGuest = ambientGuests[Math.floor(Math.random() * ambientGuests.length)];
                         if(randomGuest) randomGuest.classList.add('ambient-scanning');
-                        
-                        scanCount++;
-                        setTimeout(scanNextGuest, 500);
+                        scanCount++; setTimeout(scanNextGuest, 500);
                     } else {
-                        // Settle on A. Sterling and lock in
-                        if (synth) synth.triggerAttackRelease('A5', '16n'); // Target acquired blip
+                        if (synth) synth.triggerAttackRelease('A5', '16n');
                         guestDot.style.opacity = 1; 
-                        
                         setTimeout(() => {
                             guestDot.classList.add('guest-alert');
-                            if (scenario.isAlert) playSound('alert');
-                            
-                            setTimeout(() => {
-                                clearAmbientGuests();
-                                startScenarioContent(scenario);
-                            }, 1200);
+                            if (scenario.alert) playSound('alert');
+                            setTimeout(() => { clearAmbientGuests(); startScenarioContent(scenario); }, 1200);
                         }, 800);
                     }
                 }
-                
-                // Start scanning shortly after guests populate
                 setTimeout(scanNextGuest, 1000);
 
             } else if (index === 1) {
-                document.querySelectorAll('#cad-zone-2 .cad-room').forEach(el => el.classList.add('cad-room-active'));
-                
-                // Gliding Transition: Move to next location smoothly
+                highlightZone('z2-target');
                 guestDot.style.transition = 'all 2.5s cubic-bezier(0.4, 0, 0.2, 1)';
-                guestDot.style.top = scenario.posStart.top;
-                guestDot.style.left = scenario.posStart.left;
+                guestDot.style.top = scenario.posStart.top; guestDot.style.left = scenario.posStart.left;
                 guestDot.classList.remove('guest-alert');
                 
-                // Wait for the glide to finish before triggering the action
                 setTimeout(() => {
                     guestDot.classList.add('guest-alert');
-                    if (scenario.isAlert) playSound('alert');
+                    if (scenario.alert) playSound('alert');
                     startScenarioContent(scenario);
                 }, 2500);
 
-            } else if (scenario.isHeatmap) {
-                document.querySelectorAll('#cad-zone-4 .cad-room').forEach(el => el.classList.add('cad-room-active'));
+            } else if (scenario.heat) {
+                highlightZone('z4-target');
+                createBottleneckCrowd(scenario.posStart);
+                heatmap.classList.add('heatmap-active'); heatmap.classList.remove('heatmap-resolved');
+                guestDot.style.opacity = 0; guestProfile.classList.add('hidden');
                 
-                createBottleneckCrowd();
-                heatmap.classList.add('heatmap-active');
-                heatmap.classList.remove('heatmap-resolved');
-                guestDot.style.opacity = 0;
-                guestProfile.classList.add('hidden');
-                
-                if (scenario.isAlert) playSound('alert');
+                if (scenario.alert) playSound('alert');
                 startScenarioContent(scenario);
             }
         }
 
         function startScenarioContent(scenario) {
-            if (!scenario.isHeatmap) {
-                guestIntent.innerText = scenario.intentText;
-                guestProfile.classList.remove('hidden');
-                
-                // Track profile to dot loosely
-                guestProfile.style.top = scenario.posStart.top;
-                guestProfile.style.left = `calc(${scenario.posStart.left} + 20px)`;
+            if (!scenario.heat) {
+                guestIntent.innerText = scenario.intent; guestProfile.classList.remove('hidden');
+                guestProfile.style.top = scenario.posStart.top; guestProfile.style.left = `calc(${scenario.posStart.left} + 20px)`;
             }
-
-            // Wait for VO to finish, then reveal the Action Panel
-            addLog(scenario.logPre, scenario.isAlert, scenario.audioPre).then(() => {
+            addLog(scenario.logPre, scenario.alert, scenario.audioPre).then(() => {
                 playSound('blip');
-                panelWaiting.classList.add('hidden');
-                panelAction.classList.remove('hidden');
-                actionPrompt.innerText = scenario.prompt;
-                btnActive.innerText = scenario.btnActiveText;
+                panelWaiting.classList.add('hidden'); panelAction.classList.remove('hidden');
+                actionPrompt.innerText = scenario.prompt; btnActive.innerText = scenario.btnActive;
             });
         }
 
         function handleAction(type) {
             playSound('blip');
-            panelAction.classList.add('hidden');
-            panelWaiting.classList.remove('hidden');
+            panelAction.classList.add('hidden'); panelWaiting.classList.remove('hidden');
             panelWaiting.innerText = "EXECUTING COMMAND...";
 
-            const scenario = scenarios[currentScenario];
-            progressBar.style.width = `${((currentScenario + 1) / scenarios.length) * 100}%`;
+            const scenario = selectedScenarios[currentScenario];
+            progressBar.style.width = `${((currentScenario + 1) / selectedScenarios.length) * 100}%`;
 
             let actionPromise;
+            guestDot.classList.remove('guest-alert');
 
             if (type === 'active') {
-                guestDot.classList.remove('guest-alert'); // clear alert state
-                actionPromise = addLog(scenario.logActive, false, scenario.audioActive);
-                updateRevenue(scenario.revenueGained);
+                actionPromise = addLog(scenario.logActive, false, scenario.audioAct);
+                updateRevenue(scenario.rev);
                 
-                if(scenario.isHeatmap) {
+                if(scenario.heat) {
                     disperseBottleneckCrowd();
                     heatmap.classList.add('heatmap-resolved');
                     setTimeout(() => heatmap.classList.remove('heatmap-active', 'heatmap-resolved'), 3000);
                 } else {
-                    guestDot.style.top = scenario.posActive.top;
-                    guestDot.style.left = scenario.posActive.left;
-                    guestProfile.style.top = scenario.posActive.top;
-                    guestProfile.style.left = `calc(${scenario.posActive.left} + 20px)`;
+                    highlightZone('z3-target');
+                    guestDot.style.top = scenario.posActive.top; guestDot.style.left = scenario.posActive.left;
+                    guestProfile.style.top = scenario.posActive.top; guestProfile.style.left = `calc(${scenario.posActive.left} + 20px)`;
                 }
             } else {
-                guestDot.classList.remove('guest-alert'); // clear alert state
-                actionPromise = addLog(scenario.logPassive, true, scenario.audioPassive);
-                if(!scenario.isHeatmap) {
-                    guestDot.style.top = scenario.posPassive.top;
-                    guestDot.style.left = scenario.posPassive.left;
-                    guestProfile.style.top = scenario.posPassive.top;
-                    guestProfile.style.left = `calc(${scenario.posPassive.left} + 20px)`;
+                actionPromise = addLog(scenario.logPassive, true, scenario.audioPas);
+                if(!scenario.heat) {
+                    guestDot.style.top = scenario.posPassive.top; guestDot.style.left = scenario.posPassive.left;
+                    guestProfile.style.top = scenario.posPassive.top; guestProfile.style.left = `calc(${scenario.posPassive.left} + 20px)`;
                 }
             }
 
-            // Wait for VO to finish, then load next scenario
-            actionPromise.then(() => {
-                guestProfile.classList.add('hidden');
-                loadScenario(currentScenario + 1);
-            });
+            actionPromise.then(() => { guestProfile.classList.add('hidden'); loadScenario(currentScenario + 1); });
         }
 
         function endSimulation() {
-            playSound('success');
-            panelWaiting.innerText = "SIMULATION COMPLETE";
-            const endText = `Simulation complete. Total orchestrated revenue captured: $${revenue}.`;
-            
-            // Wait for the completion statement (clip 12)
-            addLog(endText, false, 12).then(() => {
-                const finalPitch = "AIAREL connects your environment to the guest—delivering real-time personalization, effortless upsell, and unforgettable journeys.";
-                
-                // Wait for the final pitch (clip 13), then show CTA
-                addLog(finalPitch, false, 13).then(() => {
-                    setTimeout(() => {
-                        panelWaiting.classList.add('hidden');
-                        document.getElementById('cta-panel').classList.remove('hidden');
-                        document.getElementById('cta-panel').classList.add('flex');
-                    }, 500);
+            playSound('success'); panelWaiting.innerText = "SIMULATION COMPLETE";
+            addLog(`Simulation complete. Total orchestrated revenue captured: $${revenue}.`, false, 12).then(() => {
+                addLog("AIAREL connects your environment to the guest—delivering real-time personalization, effortless upsell, and unforgettable journeys.", false, 13).then(() => {
+                    setTimeout(() => { panelWaiting.classList.add('hidden'); document.getElementById('cta-panel').classList.remove('hidden'); document.getElementById('cta-panel').classList.add('flex'); }, 500);
                 });
             });
         }
 
-        function shareLinkedIn() {
-            playSound('blip');
-            const url = encodeURIComponent(window.location.href);
-            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-        }
-
-        function shareEmail() {
-            playSound('blip');
-            const url = encodeURIComponent(window.location.href);
-            const subject = encodeURIComponent('AIAREL Guest Oversight Simulation');
-            const body = encodeURIComponent('I thought you might find this venue oversight and activation concept simulation valuable. You can authorize access to the interface here:\n\n') + url;
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        }
-
+        function shareLinkedIn() { window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank'); }
+        function shareEmail() { window.location.href = `mailto:?subject=${encodeURIComponent('AIAREL Guest Oversight Simulation')}&body=${encodeURIComponent('I thought you might find this venue oversight and activation concept simulation valuable:\n\n' + window.location.href)}`; }
         function copyLink() {
-            playSound('blip');
-            // Using document.execCommand('copy') for better cross-iframe compatibility
-            const dummy = document.createElement('input');
-            document.body.appendChild(dummy);
-            dummy.value = window.location.href;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-            
-            const tooltip = document.getElementById('copy-tooltip');
-            tooltip.classList.remove('opacity-0');
-            setTimeout(() => {
-                tooltip.classList.add('opacity-0');
-            }, 2500);
+            const dummy = document.createElement('input'); document.body.appendChild(dummy); dummy.value = window.location.href; dummy.select(); document.execCommand('copy'); document.body.removeChild(dummy);
+            const tooltip = document.getElementById('copy-tooltip'); tooltip.classList.remove('opacity-0'); setTimeout(() => tooltip.classList.add('opacity-0'), 2500);
         }
     </script>
 </body>
